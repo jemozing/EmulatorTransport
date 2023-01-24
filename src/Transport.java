@@ -1,17 +1,17 @@
 public abstract class Transport {
 
     public Transport(double start_longitude, double start_latitude, double finish_longitude, double finish_latitude, String name, int number_transport, int update_time, double transport_speed) {
-        this.start_longitude = start_longitude;
-        this.start_latitude = start_latitude;
-        this.finish_longitude = finish_longitude;
-        this.finish_latitude = finish_latitude;
-        this.name = name;
-        this.number_transport = number_transport;
-        this.update_time = update_time;
-        this.transport_speed = transport_speed;
+        this.start_longitude = start_longitude; //стартовая координата долготы
+        this.start_latitude = start_latitude;//стартовая координата широты
+        this.finish_longitude = finish_longitude;//конечная координата долготы
+        this.finish_latitude = finish_latitude;//конечная координата широты
+        this.name = name;//имя маршрута
+        this.number_transport = number_transport;//номер маршрута
+        this.update_time = update_time;//время обновления
+        this.transport_speed = transport_speed;//скорость транспорта
     }
 
-    private double longitude,latitude;
+    private double longitude,latitude; //текущие координаты транспорта
     private double start_longitude,start_latitude;
     private double finish_longitude,finish_latitude;
     private String name;
