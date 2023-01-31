@@ -1,16 +1,30 @@
 import java.awt.*;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Scanner;
 
 public class DataBase {
 
     HashMap <Integer, RouteBase> baseData = new HashMap<>();
 
-    public void readDataBase(){
-
+    public void readDataBase(String pathname){
+        try {
+            File file = new File(pathname);
+            System.out.println(file.getAbsolutePath());
+            Scanner sc = new Scanner(file);
+            sc.useDelimiter(",");
+            while (sc.hasNext()){
+                System.out.println(sc.next());
+            }
+            sc.close();
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
     }
-    public void addData(){
-        baseData.put(1234, new RouteBase());
+    public void addData(int id){
+        baseData.put(id, new RouteBase());
     }
 }
 
