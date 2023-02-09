@@ -1,9 +1,6 @@
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Scanner;
+import java.util.*;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -22,14 +19,27 @@ public class DataBaseRequests {
             if(sc.hasNext()){
                 System.out.println(sc.next());
             }}
-            //sc.useDelimiter(",\"\"coordinates\"\":\\[");
-            sc.useDelimiter("\\{\"\"name\"\":");
-            ArrayList<String> routesList1 = new ArrayList<>();
-            ArrayList<String> routesList2 = new ArrayList<>();
+            Pattern pattern = Pattern.compile("\\{|}|\"|\\[|]|");
+            //sc.useDelimiter("\\{\"\"name\"\":");
+            ArrayList<String> routesList = new ArrayList<>();
+            //ArrayList<String> routesList2 = new ArrayList<>();
+            StringBuilder routeList = new StringBuilder("");
+            String[] animals = pattern.split(sc.nextLine());
+            System.out.println(animals.length);
+            Arrays.asList(animals).forEach(animal -> routeList.append(animal));
+            //System.out.println(routelist.toString());
+            sc = new Scanner(routeList.toString());
+            sc.useDelimiter(",|name:|coordinates:");
             while (sc.hasNext()){
-                routesList1.add(sc.next());
+                String s = sc.next();
+                if(!s.equals("")) {
+                    System.out.println(s);
+                    routesList.add(s);
+                }
+
+                //routesList1.add(sc.next());
             }
-            Iterator<String> iter = routesList1.iterator();
+            /*Iterator<String> iter = routesList1.iterator();
             while (iter.hasNext()){
                sc = new Scanner(iter.next());
                sc.useDelimiter("\"\",");
@@ -54,7 +64,7 @@ public class DataBaseRequests {
                 while (sc.hasNext()){
                     System.out.println(sc.next());
                 }
-            }
+            }*/
             sc.close();
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
