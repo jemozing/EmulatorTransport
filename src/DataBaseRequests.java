@@ -1,11 +1,13 @@
-import java.awt.*;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Scanner;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
-public class DataBase {
+public class DataBaseRequests {
 
     HashMap <Integer, RouteBase> baseData = new HashMap<>();
 
@@ -14,9 +16,44 @@ public class DataBase {
             File file = new File(pathname);
             System.out.println(file.getAbsolutePath());
             Scanner sc = new Scanner(file);
+            sc.nextLine();
             sc.useDelimiter(",");
-            while (sc.hasNext()){
+            for(int i = 0; i < 5; i++){
+            if(sc.hasNext()){
                 System.out.println(sc.next());
+            }}
+            //sc.useDelimiter(",\"\"coordinates\"\":\\[");
+            sc.useDelimiter("\\{\"\"name\"\":");
+            ArrayList<String> routesList1 = new ArrayList<>();
+            ArrayList<String> routesList2 = new ArrayList<>();
+            while (sc.hasNext()){
+                routesList1.add(sc.next());
+            }
+            Iterator<String> iter = routesList1.iterator();
+            while (iter.hasNext()){
+               sc = new Scanner(iter.next());
+               sc.useDelimiter("\"\",");
+                while (sc.hasNext()){
+                    routesList2.add(sc.next());
+                }
+            }
+            routesList1.clear();
+            iter = routesList2.iterator();
+            while (iter.hasNext()){
+                sc = new Scanner(iter.next());
+                sc.useDelimiter("\"\"coordinates\"\":\\[");
+                while (sc.hasNext()){
+                    routesList1.add(sc.next());
+                }
+            }
+            routesList2.clear();
+            iter = routesList1.iterator();
+            while (iter.hasNext()){
+                sc = new Scanner(iter.next());
+                sc.useDelimiter("]},\\{");
+                while (sc.hasNext()){
+                    System.out.println(sc.next());
+                }
             }
             sc.close();
         } catch (FileNotFoundException e) {
