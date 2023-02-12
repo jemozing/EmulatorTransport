@@ -28,18 +28,17 @@ public class DataBaseRequests {
         routeBase.setName(sc.next());
 
         sc.useDelimiter("}]\"");
-        StringBuffer route_forward_buffer = new StringBuffer(sc.next());
-        StringBuffer route_backward_buffer = new StringBuffer(sc.next());
+        StringBuilder route_forward_buffer = new StringBuilder(sc.next());
+        StringBuilder route_backward_buffer = new StringBuilder(sc.next());
         route_forward_buffer.delete(0,2);
         route_forward_buffer.append("}]");
-        String route_forward = route_forward_buffer.toString().replace("\"\"", "\"");
         route_backward_buffer.delete(0,2);
         route_backward_buffer.append("}]");
-        String route_backward = route_forward_buffer.toString().replace("\"\"", "\"");
+        sc.close();
 
         JsonParser jsonParser = new JsonParser();
-        JsonArray json_forward = (JsonArray) jsonParser.parse(route_forward);
-        JsonArray json_backward = (JsonArray) jsonParser.parse(route_backward);
+        JsonArray json_forward = (JsonArray) jsonParser.parse(route_forward_buffer.toString().replace("\"\"", "\""));
+        JsonArray json_backward = (JsonArray) jsonParser.parse(route_backward_buffer.toString().replace("\"\"", "\""));
 
         JsonObject object;
         String name;
