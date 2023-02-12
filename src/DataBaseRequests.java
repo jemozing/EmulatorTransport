@@ -38,10 +38,8 @@ public class DataBaseRequests {
         String route_backward = route_forward_buffer.toString().replace("\"\"", "\"");
 
         JsonParser jsonParser = new JsonParser();
-        JsonArray json_forward = null;
-        JsonArray json_backward = null;
-        json_forward = (JsonArray) jsonParser.parse(route_forward);
-        json_backward = (JsonArray) jsonParser.parse(route_backward);
+        JsonArray json_forward = (JsonArray) jsonParser.parse(route_forward);
+        JsonArray json_backward = (JsonArray) jsonParser.parse(route_backward);
 
         JsonObject object;
         String name;
