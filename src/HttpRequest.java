@@ -7,11 +7,11 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
 public class HttpRequest {
-    private HttpURLConnection con;
 
+    private HttpURLConnection con;
     public void PostRequest() throws IOException {
-        var url = "https://httpbin.org/post";
-        var urlParameters = "name=Jack&occupation=programmer";
+        var url = "https://devsrv.ru/api/v1/driver/car";
+        var urlParameters = "phone=7 000 000-00-01&pin_code=1111";
         byte[] postData = urlParameters.getBytes(StandardCharsets.UTF_8);
 
         try {
@@ -21,8 +21,8 @@ public class HttpRequest {
 
             con.setDoOutput(true);
             con.setRequestMethod("POST");
-            con.setRequestProperty("User-Agent", "Java client");
-            con.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+            con.setRequestProperty("Content-Type", "application/json");
+            con.setRequestProperty("Accept", "application/json");
 
             try (var wr = new DataOutputStream(con.getOutputStream())) {
 
