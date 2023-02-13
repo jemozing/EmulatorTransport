@@ -9,8 +9,8 @@ public class Main {
         ConfigData configData = new ConfigData();
         configData.readConfigFile("config.csv");
         HttpRequest request = new HttpRequest();
-        //request.PostRequest();
-        //request.GetRequest();
+        request.PostRequest();
+        request.GetRequest();
         DataBaseRequests dataBaseRequests = new DataBaseRequests();
         dataBaseRequests.readDataBase("C:\\Users\\ponch\\IdeaProjects\\EmulatorTransport\\out\\production\\EmulatorTransport/RouteFiles/mbus_421.csv");
         //System.out.println(timeDistance(73.3017573000000055571945267729461193084716796875,55.07409440899999708562972955405712127685546875,73.29325199999999540523276664316654205322265625,55.071810999999996738551999442279338836669921875,20));
