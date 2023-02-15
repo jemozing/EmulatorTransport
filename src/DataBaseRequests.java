@@ -39,7 +39,7 @@ public class DataBaseRequests {
         JsonParser jsonParser = new JsonParser();
         JsonArray json_forward = (JsonArray) jsonParser.parse(route_forward_buffer.toString().replace("\"\"", "\""));
         JsonArray json_backward = (JsonArray) jsonParser.parse(route_backward_buffer.toString().replace("\"\"", "\""));
-
+        System.out.println(json_forward.toString());
         JsonObject object;
         String name;
         for(JsonElement element : json_forward){
