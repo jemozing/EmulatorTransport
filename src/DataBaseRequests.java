@@ -13,7 +13,7 @@ import java.util.Scanner;
 
 public class DataBaseRequests {
 
-    HashMap <Integer, RouteBase> baseData = new HashMap<>();
+    HashMap <String, RouteBase> baseData = new HashMap<>();
 
     public RouteBase readDataBase(String pathname) throws IOException {
         RouteBase routeBase = new RouteBase();
@@ -72,8 +72,11 @@ public class DataBaseRequests {
         }
         return routeBase;
     }
-    public void addData(int id){
-        baseData.put(id, new RouteBase());
+    public void addData(String id, RouteBase routeBase){
+        baseData.put(id, routeBase);
+    }
+    public RouteBase getData(String id){
+        return baseData.get(id);
     }
 }
 
@@ -177,5 +180,16 @@ class Point{
 
     public void setP_latitude(BigDecimal p_latitude) {
         this.p_latitude = p_latitude;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public boolean hasName(){
+        if (name != null){
+            return true;
+        }
+        else return false;
     }
 }

@@ -1,6 +1,8 @@
+import java.math.BigDecimal;
+
 public abstract class Transport {
 
-    public Transport(double start_longitude, double start_latitude, double finish_longitude, double finish_latitude, String name, int number_transport, int update_time, double transport_speed) {
+    public Transport(BigDecimal start_longitude, BigDecimal start_latitude, BigDecimal finish_longitude, BigDecimal finish_latitude, String name, int number_transport, int update_time, double transport_speed) {
         this.start_longitude = start_longitude; //стартовая координата долготы
         this.start_latitude = start_latitude;//стартовая координата широты
         this.finish_longitude = finish_longitude;//конечная координата долготы
@@ -11,59 +13,59 @@ public abstract class Transport {
         this.transport_speed = transport_speed;//скорость транспорта
     }
 
-    private double longitude,latitude; //текущие координаты транспорта
-    private double start_longitude,start_latitude;
-    private double finish_longitude,finish_latitude;
+    private BigDecimal longitude,latitude; //текущие координаты транспорта
+    private BigDecimal start_longitude,start_latitude;
+    private BigDecimal finish_longitude,finish_latitude;
     private String name;
     private int number_transport;
     private int update_time;
     private double transport_speed;
 
-    public double getLongitude() {
+    public BigDecimal getLongitude() {
         return longitude;
     }
 
-    public void setLongitude(double longitude) {
+    public void setLongitude(BigDecimal longitude) {
         this.longitude = longitude;
     }
 
-    public double getLatitude() {
+    public BigDecimal getLatitude() {
         return latitude;
     }
 
-    public void setLatitude(double latitude) {
+    public void setLatitude(BigDecimal latitude) {
         this.latitude = latitude;
     }
 
-    public double getStart_longitude() {
+    public BigDecimal getStart_longitude() {
         return start_longitude;
     }
 
-    public void setStart_longitude(double start_longitude) {
+    public void setStart_longitude(BigDecimal start_longitude) {
         this.start_longitude = start_longitude;
     }
 
-    public double getStart_latitude() {
+    public BigDecimal getStart_latitude() {
         return start_latitude;
     }
 
-    public void setStart_latitude(double start_latitude) {
+    public void setStart_latitude(BigDecimal start_latitude) {
         this.start_latitude = start_latitude;
     }
 
-    public double getFinish_longitude() {
+    public BigDecimal getFinish_longitude() {
         return finish_longitude;
     }
 
-    public void setFinish_longitude(double finish_longitude) {
+    public void setFinish_longitude(BigDecimal finish_longitude) {
         this.finish_longitude = finish_longitude;
     }
 
-    public double getFinish_latitude() {
+    public BigDecimal getFinish_latitude() {
         return finish_latitude;
     }
 
-    public void setFinish_latitude(double finish_latitude) {
+    public void setFinish_latitude(BigDecimal finish_latitude) {
         this.finish_latitude = finish_latitude;
     }
 
@@ -98,4 +100,8 @@ public abstract class Transport {
     public void setTransport_speed(double transport_speed) {
         this.transport_speed = transport_speed;
     }
+
+    public abstract void startForward();
+
+    public abstract void startBackward();
 }
