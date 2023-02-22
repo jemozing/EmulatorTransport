@@ -114,7 +114,7 @@ public class HttpRequest {
             con = (HttpURLConnection) myurl.openConnection();
 
             con.setRequestMethod("GET");
-            con.setRequestProperty("Authorization", "Bearer" + AuthorizationKey);
+            con.setRequestProperty("Authorization", "Bearer " + AuthorizationKey);
             con.setRequestProperty("Content-Type", "application/json");
             con.setRequestProperty("Accept", "application/json");
             StringBuilder content;
@@ -161,7 +161,7 @@ public class HttpRequest {
             con = (HttpURLConnection) myurl.openConnection();
 
             con.setRequestMethod("GET");
-            con.setRequestProperty("Authorization", "Bearer" + AuthorizationKey);
+            con.setRequestProperty("Authorization", "Bearer " + AuthorizationKey);
             con.setRequestProperty("Content-Type", "application/json");
             con.setRequestProperty("Accept", "application/json");
             StringBuilder content;
@@ -200,7 +200,7 @@ public class HttpRequest {
             con = (HttpURLConnection) myurl.openConnection();
 
             con.setRequestMethod("GET");
-            con.setRequestProperty("Authorization", "Bearer" + AuthorizationKey);
+            con.setRequestProperty("Authorization", "Bearer " + AuthorizationKey);
             con.setRequestProperty("Content-Type", "application/json");
             con.setRequestProperty("Accept", "application/json");
             StringBuilder content;
@@ -243,7 +243,7 @@ public class HttpRequest {
             con = (HttpURLConnection) myurl.openConnection();
 
             con.setRequestMethod("GET");
-            con.setRequestProperty("Authorization", "Bearer" + AuthorizationKey);
+            con.setRequestProperty("Authorization", "Bearer " + AuthorizationKey);
             con.setRequestProperty("Content-Type", "application/json");
             con.setRequestProperty("Accept", "application/json");
             StringBuilder content;
@@ -286,7 +286,7 @@ public class HttpRequest {
             con = (HttpURLConnection) myurl.openConnection();
 
             con.setRequestMethod("GET");
-            con.setRequestProperty("Authorization", "Bearer" + AuthorizationKey);
+            con.setRequestProperty("Authorization", "Bearer " + AuthorizationKey);
             con.setRequestProperty("Content-Type", "application/json");
             con.setRequestProperty("Accept", "application/json");
             StringBuilder content;
@@ -329,7 +329,7 @@ public class HttpRequest {
             con = (HttpURLConnection) myurl.openConnection();
 
             con.setRequestMethod("GET");
-            con.setRequestProperty("Authorization", "Bearer" + AuthorizationKey);
+            con.setRequestProperty("Authorization", "Bearer " + AuthorizationKey);
             con.setRequestProperty("Content-Type", "application/json");
             con.setRequestProperty("Accept", "application/json");
             StringBuilder content;
@@ -372,7 +372,7 @@ public class HttpRequest {
             con = (HttpURLConnection) myurl.openConnection();
 
             con.setRequestMethod("GET");
-            con.setRequestProperty("Authorization", "Bearer" + AuthorizationKey);
+            con.setRequestProperty("Authorization", "Bearer " + AuthorizationKey);
             con.setRequestProperty("Content-Type", "application/json");
             con.setRequestProperty("Accept", "application/json");
             StringBuilder content;
@@ -418,7 +418,7 @@ public class HttpRequest {
 
             con.setDoOutput(true);
             con.setRequestMethod("POST");
-            con.setRequestProperty("Authorization", "Bearer" + AuthorizationKey);
+            con.setRequestProperty("Authorization", "Bearer " + AuthorizationKey);
             con.setRequestProperty("Content-Type", "application/json");
             con.setRequestProperty("Accept", "application/json");
 
@@ -463,7 +463,7 @@ public class HttpRequest {
 
             con.setDoOutput(true);
             con.setRequestMethod("POST");
-            con.setRequestProperty("Authorization", "Bearer" + AuthorizationKey);
+            con.setRequestProperty("Authorization", "Bearer " + AuthorizationKey);
             con.setRequestProperty("Content-Type", "application/json");
             con.setRequestProperty("Accept", "application/json");
 
@@ -508,7 +508,7 @@ public class HttpRequest {
 
             con.setDoOutput(true);
             con.setRequestMethod("POST");
-            con.setRequestProperty("Authorization", "Bearer" + AuthorizationKey);
+            con.setRequestProperty("Authorization", "Bearer " + AuthorizationKey);
             con.setRequestProperty("Content-Type", "application/json");
             con.setRequestProperty("Accept", "application/json");
 
@@ -553,7 +553,7 @@ public class HttpRequest {
 
             con.setDoOutput(true);
             con.setRequestMethod("POST");
-            con.setRequestProperty("Authorization", "Bearer" + AuthorizationKey);
+            con.setRequestProperty("Authorization", "Bearer " + AuthorizationKey);
             con.setRequestProperty("Content-Type", "application/json");
             con.setRequestProperty("Accept", "application/json");
 
@@ -598,7 +598,7 @@ public class HttpRequest {
 
             con.setDoOutput(true);
             con.setRequestMethod("POST");
-            con.setRequestProperty("Authorization", "Bearer" + AuthorizationKey);
+            con.setRequestProperty("Authorization", "Bearer " + AuthorizationKey);
             con.setRequestProperty("Content-Type", "application/json");
             con.setRequestProperty("Accept", "application/json");
 
