@@ -1,6 +1,7 @@
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -18,14 +19,12 @@ public class Main {
         }
         while (iter.hasNext()){
             SettingRoute setting = (SettingRoute) iter.next();
-            dataBaseRequests.addData(setting.getRoute_id(), dataBaseRequests.readDataBase("out\\production\\EmulatorTransport/RouteFiles/" + setting.getRoute_id()  + ".csv"));
+            dataBaseRequests.addData(setting.getRoute_id(), dataBaseRequests.readDataBase("src/RouteFiles/" + setting.getRoute_id()  + ".csv"));
         }
 
         ExecutorService pool = Executors.newCachedThreadPool();
         for(int i = 0; i < ConfigData.getSettingRoutesData().get(0).getNumberOfCars(); i++){
-            pool.execute(new Driver(dataBaseRequests.getData("04210").getRoute_forward(),
-                    dataBaseRequests.getData("04210").getRoute_backward(),
-                    dataBaseRequests.getData("04210").getName(),
+            pool.execute(new Driver(dataBaseRequests.getData("04210"),
                     60*i,
                     ConfigData.getSettingRoutesData().get(0).getUpdateFrequency(),
                     ConfigData.getSettingRoutesData().get(0).getSpeed(),
