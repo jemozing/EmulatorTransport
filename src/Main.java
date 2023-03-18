@@ -6,6 +6,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class Main {
+
     public static void main(String[] args) throws IOException {
         HttpRequest request = new HttpRequest();
         DataBaseRequests dataBaseRequests = new DataBaseRequests();
@@ -21,7 +22,7 @@ public class Main {
             SettingRoute setting = (SettingRoute) iter.next();
             dataBaseRequests.addData(setting.getRoute_id(), dataBaseRequests.readDataBase("src/RouteFiles/" + setting.getRoute_id()  + ".csv"));
         }
-
+        //Основные потоки с водителями
         ExecutorService pool = Executors.newCachedThreadPool();
         for(int i = 0; i < ConfigData.getSettingRoutesData().get(0).getNumberOfCars(); i++){
             pool.execute(new Driver(dataBaseRequests.getData("04210"),

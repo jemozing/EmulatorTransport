@@ -74,6 +74,7 @@ public class Driver implements Runnable{
         long startTime = System.currentTimeMillis();
         long elapsedTime = 0;
         //Цикл хождения по маршруту
+        //
         while (listIterator.hasNext()){
                 currentPoint = listIterator.next();
                 try {

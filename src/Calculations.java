@@ -1,5 +1,5 @@
 import java.math.BigDecimal;
-
+//класс для формул
 public class Calculations {
     public static double timeDistance(double lat1, double lon1, double lat2, double lon2,  double speed){
         double R = 6371; // Earth radius in kilometers
@@ -17,6 +17,7 @@ public class Calculations {
         *   Point 2 have lat2 = latitude and lon2 = longitude
         **/
     }
+
     public static Point givePointFromDistance(double lat, double lon, double distance, double lat2, double lon2) {
         double R = 6371;
         double azimuth = azimuth(lat, lon, lat2, lon2);
