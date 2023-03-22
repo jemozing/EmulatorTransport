@@ -1,10 +1,7 @@
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
-import java.io.BufferedReader;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
@@ -321,8 +318,10 @@ public class HttpRequest {
     //GET
     //Список доступных времен для начала работы
     public JsonObject ListOfSessionTimesToGetStartedRequest(String AuthorizationKey, String car_id, String route_id, String terminus_id) throws IOException {
-        var url = "https://devsrv.ru/api/v1/driver/session/times";
-
+        var url = "https://devsrv.ru/api/v1/driver/session/times" +
+                "?route_id=" + route_id +
+                "&car_id=" + car_id +
+                "&terminus_id=" + terminus_id;
         try {
 
             var myurl = new URL(url);
@@ -332,6 +331,7 @@ public class HttpRequest {
             con.setRequestProperty("Authorization", "Bearer " + AuthorizationKey);
             con.setRequestProperty("Content-Type", "application/json");
             con.setRequestProperty("Accept", "application/json");
+
             StringBuilder content;
 
             try (BufferedReader in = new BufferedReader(
@@ -423,7 +423,6 @@ public class HttpRequest {
             con.setRequestProperty("Accept", "application/json");
 
             try (var wr = new DataOutputStream(con.getOutputStream())) {
-
                 wr.write(postData);
             }
 
@@ -543,7 +542,7 @@ public class HttpRequest {
     //Старт сессии регулируемого маршрута
     public void StartSessionTypeARequest(String AuthorizationKey, String car_id, String route_id, String terminus_id, String time) throws IOException {
         var url = "https://devsrv.ru/api/v1/driver/session/start/a";
-        var urlParameters = "{\"car_id\":\""+car_id+"\",\"route_id\":\""+route_id+"\",\"terminus_id\":\""+terminus_id+"\",\"time\":\""+time+"\"}";
+        var urlParameters = "{\"car_id\":\""+car_id+"\",\"route_id\":\""+route_id+"\",\"terminus_id\":\""+terminus_id+"\",\"time\":"+time+"}";
         byte[] postData = urlParameters.getBytes(UTF_8);
         JsonObject jsonObject;
         try {

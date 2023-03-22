@@ -1,6 +1,7 @@
 import java.io.IOException;
 import java.util.*;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 public class Driver implements Runnable{
     RouteBase route;
@@ -15,6 +16,7 @@ public class Driver implements Runnable{
     HttpRequest request;
     JsonObject response;
     String authorizationToken;
+    String carId, routeId, terminusId, startTime;
     public Driver(RouteBase route, int movementInterval, int UpdateFrequency, double speed, String phone_number, String pin_code, HttpRequest request){
         this.route = route;
         this.movementInterval = movementInterval;
@@ -45,6 +47,40 @@ public class Driver implements Runnable{
             throw new RuntimeException(e);
         }
 
+        try {
+            //List of driver's cars
+            response = request.ListOfDriversCarsRequest(authorizationToken);
+            JsonArray jArray = response.getAsJsonArray("result");
+            carId = jArray.get(0).getAsJsonObject().get("id").toString();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        try {
+            //List of routes for the selected car
+            response = request.ListOfRoutesForTheSelectedCarRequest(authorizationToken, carId);
+            JsonArray jArray = response.getAsJsonArray("result");
+            routeId = jArray.get(0).getAsJsonObject().get("id").toString();
+            terminusId = jArray.get(0).getAsJsonObject().get("terminus").getAsJsonArray().get(0).getAsJsonObject().get("id").toString();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        try {
+            //List of session times to get started
+            response = request.ListOfSessionTimesToGetStartedRequest(authorizationToken, carId, routeId, terminusId);
+            JsonObject jo = response.getAsJsonObject("result");
+            startTime = jo.getAsJsonObject().get("times").getAsJsonArray().get(0).getAsJsonObject().get("time").toString();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        try {
+            //Start session type A
+            request.StartSessionTypeARequest(authorizationToken, carId, routeId, terminusId, startTime);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         transport_route = new Transport(
                 route.getRoute_forward().get(0).getP_longitude(),
                 route.getRoute_forward().get(0).getP_latitude(),
