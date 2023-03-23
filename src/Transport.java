@@ -97,6 +97,17 @@ public abstract class Transport {
         return transport_speed;
     }
 
+    public Point getCurrentCoordinates() {
+        return new Point(longitude,latitude, "");
+    }
+    public void setCurrentCoordinates(BigDecimal longitude, BigDecimal latitude){
+        this.longitude = longitude;
+        this.latitude = latitude;
+    }
+    public void setCurrentCoordinates(Point currentPoint){
+        this.longitude = currentPoint.getP_longitude();
+        this.latitude = currentPoint.getP_latitude();
+    }
     public void setTransport_speed(double transport_speed) {
         this.transport_speed = transport_speed;
     }

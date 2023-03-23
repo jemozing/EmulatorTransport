@@ -12,7 +12,7 @@ public class Driver implements Runnable{
 
     String phone_number;
     String pin_code;
-    boolean direction = true;
+    boolean directionRoute = true;
     HttpRequest request;
     JsonObject response;
     String authorizationToken;
@@ -28,59 +28,33 @@ public class Driver implements Runnable{
     }
     @Override
     public void run() {
+        //Как это все работает:
+        //сначала производится задержка потока в зависимости от того когда водитель поедет от начала.
+        //потом происходить авторизация водителя на сервере через определенный порядок запросов
+        //загружается в класс водителя транспорт на котором он будет ездить, у него есть параметры:
+        // начальные координаты (долгота и широта)
+        // конечные координаты (долгота и широта)
+        // название маршрута
+        // интервал движения между маршрутами
+        // время обновления (частота отправки данных на сервер)
+        // скорость транспорта
+        // После задается начальная координата транспорта
+        // И начинается обход маршрута по точкам с обозначение промежуточных точек
         try {
-            Thread.currentThread().sleep(movementInterval * 1000);
+            Thread.currentThread().sleep(movementInterval * 1000);//начальная задержка между отправками водителей
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
         try {
-            //Authorization driver
-            response = request.AuthorizationRequest(phone_number, pin_code);
-            authorizationToken = response.getAsJsonObject("result").getAsJsonPrimitive("token").getAsString();
-            Scanner scanner = new Scanner(authorizationToken);
-            scanner.useDelimiter("\\|");
-            scanner.next();
-            authorizationToken = scanner.next();
-            System.out.println(authorizationToken);
-            //request.StartSessionTypeARequest(authorizationToken, "123", "421", "321", "10");
+            authorizationDriver();//функция авторизации
+            ListDriversCars();
+            ListRoutes();
+            ListOfSessions();
+            StartSessionA();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
-        try {
-            //List of driver's cars
-            response = request.ListOfDriversCarsRequest(authorizationToken);
-            JsonArray jArray = response.getAsJsonArray("result");
-            carId = jArray.get(0).getAsJsonObject().get("id").toString();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-        try {
-            //List of routes for the selected car
-            response = request.ListOfRoutesForTheSelectedCarRequest(authorizationToken, carId);
-            JsonArray jArray = response.getAsJsonArray("result");
-            routeId = jArray.get(0).getAsJsonObject().get("id").toString();
-            terminusId = jArray.get(0).getAsJsonObject().get("terminus").getAsJsonArray().get(0).getAsJsonObject().get("id").toString();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-        try {
-            //List of session times to get started
-            response = request.ListOfSessionTimesToGetStartedRequest(authorizationToken, carId, routeId, terminusId);
-            JsonObject jo = response.getAsJsonObject("result");
-            startTime = jo.getAsJsonObject().get("times").getAsJsonArray().get(0).getAsJsonObject().get("time").toString();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-        try {
-            //Start session type A
-            request.StartSessionTypeARequest(authorizationToken, carId, routeId, terminusId, startTime);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
         transport_route = new Transport(
                 route.getRoute_forward().get(0).getP_longitude(),
                 route.getRoute_forward().get(0).getP_latitude(),
@@ -89,70 +63,135 @@ public class Driver implements Runnable{
                 route.name,
                 movementInterval,
                 UpdateFrequency,
-                speed)
-        {
+                speed) {
             @Override
-            public void startForward(){
+            public void startForward() {
                 setLongitude(getStart_longitude());
                 setLatitude(getStart_latitude());
             }
+
             @Override
-            public void startBackward(){
+            public void startBackward() {
                 setLongitude(getFinish_longitude());
                 setLatitude(getFinish_latitude());
             }
         };
 
-        transport_route.startForward();
-        Iterator<Point> listIterator = route.getRoute_forward().iterator();
-        Point lastPoint = listIterator.next(), currentPoint;
-        System.out.println(lastPoint.getName()+ " " + lastPoint.getP_longitude() + " " + lastPoint.getP_latitude());
-        long startTime = System.currentTimeMillis();
-        long elapsedTime = 0;
+        Iterator<Point> routeIterator;
+        if(directionRoute){//Определение направления маршрута
+            transport_route.startForward();
+            routeIterator = route.getRoute_forward().iterator();
+        } else {
+            transport_route.startBackward();
+            routeIterator = route.getRoute_backward().iterator();
+        }
+        //текущая точка, следующая точка, промежуточная точка
+        Point currentPoint = routeIterator.next(), nextPoint = null, intermediatePoint = null;
+        System.out.println(currentPoint.getName() + " " + currentPoint.getP_longitude() + " " + currentPoint.getP_latitude());
+        long startTimeTimer = System.currentTimeMillis();//начальное время
+        long elapsedTime = 0; //прошедшее время
         //Цикл хождения по маршруту
         //
-        while (listIterator.hasNext()){
-                currentPoint = listIterator.next();
+        while (routeIterator.hasNext()){
+            if(intermediatePoint == null){
+                nextPoint = routeIterator.next();
+            }
+            //Расчет времени до следующей точки
+            long timeToNextPoint = Math.round(Calculations.timeDistance(
+                    currentPoint.getP_latitude().doubleValue(),
+                    currentPoint.getP_longitude().doubleValue(),
+                    nextPoint.getP_latitude().doubleValue(),
+                    nextPoint.getP_longitude().doubleValue(),
+                    transport_route.getTransport_speed()));
+
+            if(elapsedTime + timeToNextPoint > 15 * 1000){
+                //Сколько времени транспорт будет ехать до 15 секунд
+                long timeAdd = 15 * 1000 - elapsedTime;
+                //Расчет координаты точки через некоторое время
+                intermediatePoint = Calculations.givePointFromDistance(
+                        currentPoint.getP_latitude().doubleValue(),
+                        currentPoint.getP_longitude().doubleValue(),
+                        (timeToNextPoint / 1000) * (speed / 3.6),
+                        nextPoint.getP_latitude().doubleValue(),
+                        nextPoint.getP_longitude().doubleValue());
+                transport_route.setCurrentCoordinates(intermediatePoint);
+                currentPoint = intermediatePoint;
+                elapsedTime = 0;
+            } else
+            if (elapsedTime + timeToNextPoint < 15 * 1000){
+                transport_route.setCurrentCoordinates(nextPoint);
+                currentPoint = nextPoint;
+                elapsedTime += timeToNextPoint;
+                intermediatePoint = null;
+
+            }else {
+                transport_route.setCurrentCoordinates(nextPoint);
+                currentPoint = nextPoint;
+                elapsedTime = 0;
+                intermediatePoint = null;
+            }
+
+            try {
+                Thread.currentThread().sleep(15*1000);
+                if(System.currentTimeMillis() - startTimeTimer >= 15*1000) {
+                    sendLocation(transport_route.getCurrentCoordinates());
+                    System.out.println(transport_route.getCurrentCoordinates().getP_longitude() + " " + transport_route.getCurrentCoordinates().getP_latitude());
+                    startTimeTimer = System.currentTimeMillis();
+                }
+            } catch (InterruptedException | IOException e) {
+                throw new RuntimeException(e);
+            }
+            if(currentPoint.hasName()){
+                System.out.println(nextPoint.getName() + " " + nextPoint.getP_longitude() + " " + nextPoint.getP_latitude());
+                System.out.println("Стою 15 секунд");
                 try {
-                    long time = Math.round(Calculations.timeDistance(
-                            lastPoint.getP_latitude().doubleValue(),
-                            lastPoint.getP_longitude().doubleValue(),
-                            currentPoint.getP_latitude().doubleValue(),
-                            currentPoint.getP_longitude().doubleValue(),
-                            transport_route.getTransport_speed()) * 60 * 60 * 1000);//Расчет времени до следующей точки
-                    if (elapsedTime + time > 15*1000){
-                        long timeAdd = 15*1000 - elapsedTime; //Сколько времени осталось до 15 секунд;
-                        Point betweenPoint = Calculations.givePointFromDistance(
-                                            lastPoint.getP_latitude().doubleValue(),
-                                            lastPoint.getP_longitude().doubleValue(),
-                                    time*speed/60/60/1000,
-                                            currentPoint.getP_latitude().doubleValue(),
-                                            currentPoint.getP_longitude().doubleValue());
-                        startTime = System.currentTimeMillis();
-                        try {
-                            request.SendingLocationRequest(authorizationToken,betweenPoint.getP_latitude().toString(), betweenPoint.getP_longitude().toString());
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
-                        }
-                        elapsedTime = 0;
-                    }
-                    if(elapsedTime + time == 15*1000) {
-
-                    }
-                    Thread.currentThread().sleep(time);
-
-                    if (currentPoint.hasName()) {
-                        System.out.println(currentPoint.getName() + " " + currentPoint.getP_longitude() + " " + currentPoint.getP_latitude());
-                        System.out.println("Стою 10 секунд");
-                        Thread.currentThread().sleep(10 * 1000);
-                    } else {
-                        System.out.println("Pass the point" + " " + currentPoint.getP_longitude() + " " + currentPoint.getP_latitude() + "  Времени потрачено: " + time / 1000);
-                    }
-                } catch (InterruptedException e) {
+                    Thread.currentThread().sleep(15 * 1000);
+                    sendLocation(transport_route.getCurrentCoordinates());
+                } catch (InterruptedException | IOException e) {
                     throw new RuntimeException(e);
                 }
-            lastPoint = currentPoint;
-            elapsedTime = System.currentTimeMillis() - startTime;
+            }else {
+                //System.out.println("Pass the point" + " " + nextPoint.getP_longitude() + " " + nextPoint.getP_latitude() + "  Времени потрачено: " + timeToNextPoint / 1000);
+            }
+
         }
+
+    }
+
+    private void authorizationDriver() throws IOException{
+        //Authorization driver
+        //дописать порядок авторизации и вынести в отдельную функцию
+        response = request.AuthorizationRequest(phone_number, pin_code);
+        authorizationToken = response.getAsJsonObject("result").getAsJsonPrimitive("token").getAsString();
+        Scanner scanner = new Scanner(authorizationToken);
+        scanner.useDelimiter("\\|");
+        scanner.next();
+        authorizationToken = scanner.next();
+        System.out.println(authorizationToken);
+        //request.StartSessionTypeARequest(authorizationToken, "123", "421", "321", "10");
+    }
+    private void ListDriversCars() throws IOException {
+        //List of driver's cars
+        response = request.ListOfDriversCarsRequest(authorizationToken);
+        JsonArray jArray = response.getAsJsonArray("result");
+        carId = jArray.get(0).getAsJsonObject().get("id").toString();
+    }
+    private void ListRoutes() throws IOException {
+        response = request.ListOfRoutesForTheSelectedCarRequest(authorizationToken, carId);
+        JsonArray jArray = response.getAsJsonArray("result");
+        routeId = jArray.get(0).getAsJsonObject().get("id").toString();
+        terminusId = jArray.get(0).getAsJsonObject().get("terminus").getAsJsonArray().get(0).getAsJsonObject().get("id").toString();
+    }
+    private void ListOfSessions() throws IOException {
+        response = request.ListOfSessionTimesToGetStartedRequest(authorizationToken, carId, routeId, terminusId);
+        JsonObject jo = response.getAsJsonObject("result");
+        startTime = jo.getAsJsonObject().get("times").getAsJsonArray().get(0).getAsJsonObject().get("time").toString();
+    }
+    private void StartSessionA() throws IOException {
+        request.StartSessionTypeARequest(authorizationToken, carId, routeId, terminusId, startTime);
+    }
+
+    private void sendLocation(Point currentPoint) throws IOException {
+        request.SendingLocationRequest(authorizationToken, currentPoint.getP_latitude().toString(), currentPoint.getP_longitude().toString());
     }
 }

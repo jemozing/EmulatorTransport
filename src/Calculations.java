@@ -9,8 +9,8 @@ public class Calculations {
                 Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
                         Math.sin(lon/2) * Math.sin(lon/2);
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-        double distance = R *c;
-        return distance/speed;
+        double distance = R * c;
+        return distance/speed  * 60 * 60 * 1000;
 
         /*  This function is for calculating the time if you know two points on the map
            Point 1 have lat1 = latitude and lon1 = longitude
@@ -19,8 +19,8 @@ public class Calculations {
     }
 
     public static Point givePointFromDistance(double lat, double lon, double distance, double lat2, double lon2) {
-        double R = 6371;
-        double azimuth = azimuth(lat, lon, lat2, lon2);
+        double R = 6371000;
+        double azimuth = azimuth(lat, lon, lat2, lon2) + Math.PI;
         double pointLat = Math.asin(Math.sin(toRad(lat))*Math.cos(distance/R)+Math.cos(toRad(lat))*Math.sin(distance/R)*Math.cos(azimuth));
         double pointLon =  Math.atan2(Math.sin(azimuth)*Math.sin(distance/R)*Math.cos(toRad(lat)), Math.cos(distance/R)-Math.sin(toRad(lat))*Math.sin(pointLat));
         return new Point(new BigDecimal(Math.toDegrees(pointLon)+lon), new BigDecimal(Math.toDegrees(pointLat)),"");
