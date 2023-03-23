@@ -8,6 +8,9 @@ import java.util.concurrent.Executors;
 public class Main {
 
     public static void main(String[] args) throws IOException {
+        System.out.println("Эмулятор транспорта версия 1");
+        System.out.println("Во избежании проблем советую приготовить огнетушитель");
+        System.out.println("Приятной DDOS атаки!");
         HttpRequest request = new HttpRequest();
         DataBaseRequests dataBaseRequests = new DataBaseRequests();
         ConfigData.readConfigFile("config.csv");
@@ -25,13 +28,15 @@ public class Main {
         //Основные потоки с водителями
         ExecutorService pool = Executors.newCachedThreadPool();
         for(int i = 0; i < ConfigData.getSettingRoutesData().get(0).getNumberOfCars(); i++){
-            pool.execute(new Driver(dataBaseRequests.getData("04210"),
-                    60*i,
+            pool.execute(new Driver(
+                    dataBaseRequests.getData("04210"),
+                    ConfigData.getSettingRoutesData().get(0).getMovementInterval()*i,
                     ConfigData.getSettingRoutesData().get(0).getUpdateFrequency(),
                     ConfigData.getSettingRoutesData().get(0).getSpeed(),
                     phoneNumbers.get(i),
                     pinCodes.get(i),
-                    request));
+                    request,
+                    i%2==0));
         }
         //request.AuthorizationRequest("7 000 000-00-01", "1111");
 
