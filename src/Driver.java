@@ -132,7 +132,7 @@ public class Driver implements Runnable{
             }
 
             try {
-                Thread.currentThread().sleep(15*1000);
+                Thread.currentThread().sleep(2*1000);//момент с отправкой еще будет дорабатываться
                 if(System.currentTimeMillis() - startTimeTimer >= 15*1000) {
                     sendLocation(transport_route.getCurrentCoordinates());
                     System.out.println(transport_route.getCurrentCoordinates().getP_longitude() + " " + transport_route.getCurrentCoordinates().getP_latitude());
@@ -142,7 +142,7 @@ public class Driver implements Runnable{
                 throw new RuntimeException(e);
             }
             if(currentPoint.hasName()){
-                System.out.println(nextPoint.getName() + " " + nextPoint.getP_longitude() + " " + nextPoint.getP_latitude());
+                System.out.println(currentPoint.getName() + " " + currentPoint.getP_longitude() + " " + currentPoint.getP_latitude());
                 System.out.println("Стою 15 секунд");
                 try {
                     Thread.currentThread().sleep(15 * 1000);

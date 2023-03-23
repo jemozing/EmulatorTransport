@@ -187,9 +187,10 @@ class Point{
     }
 
     public boolean hasName(){
-        if (name != null){
-            return true;
-        }
-        else return false;
+        if (name == null){
+            return false;
+        } else if (name.isEmpty()) {
+            return false;
+        } else return true;
     }
 }
