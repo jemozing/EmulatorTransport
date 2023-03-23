@@ -20,7 +20,7 @@ public class Calculations {
 
     public static Point givePointFromDistance(double lat, double lon, double distance, double lat2, double lon2) {
         double R = 6371000;
-        double azimuth = azimuth(lat, lon, lat2, lon2) + Math.PI;
+        double azimuth = azimuth(lat, lon, lat2, lon2);
         double pointLat = Math.asin(Math.sin(toRad(lat))*Math.cos(distance/R)+Math.cos(toRad(lat))*Math.sin(distance/R)*Math.cos(azimuth));
         double pointLon =  Math.atan2(Math.sin(azimuth)*Math.sin(distance/R)*Math.cos(toRad(lat)), Math.cos(distance/R)-Math.sin(toRad(lat))*Math.sin(pointLat));
         return new Point(new BigDecimal(Math.toDegrees(pointLon)+lon), new BigDecimal(Math.toDegrees(pointLat)),"");

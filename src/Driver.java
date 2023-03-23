@@ -90,6 +90,7 @@ public class Driver implements Runnable{
         System.out.println(currentPoint.getName() + " " + currentPoint.getP_longitude() + " " + currentPoint.getP_latitude());
         long startTimeTimer = System.currentTimeMillis();//начальное время
         long elapsedTime = 0; //прошедшее время
+        long timeAdd = 0;
         //Цикл хождения по маршруту
         //
         while (routeIterator.hasNext()){
@@ -106,7 +107,7 @@ public class Driver implements Runnable{
 
             if(elapsedTime + timeToNextPoint > 15 * 1000){
                 //Сколько времени транспорт будет ехать до 15 секунд
-                long timeAdd = 15 * 1000 - elapsedTime;
+                timeAdd = 15 * 1000 - elapsedTime;
                 //Расчет координаты точки через некоторое время
                 intermediatePoint = Calculations.givePointFromDistance(
                         currentPoint.getP_latitude().doubleValue(),
