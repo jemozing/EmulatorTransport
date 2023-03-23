@@ -46,15 +46,15 @@ public class Driver implements Runnable{
             throw new RuntimeException(e);
         }
         try {
-            authorizationDriver();//функция авторизации
-            ListDriversCars();
-            ListRoutes();
-            ListOfSessions();
-            StartSessionA();
+            authorizationDriver();//авторизация
+            ListDriversCars();//получение списка машин доступных для водителя
+            ListRoutes();//получения списка маршрутов
+            ListOfSessions();//получение сессии
+            StartSessionA();//старт сессии
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
+        //создание транспорта для водителя с указанным параметрами и добавление функций
         transport_route = new Transport(
                 route.getRoute_forward().get(0).getP_longitude(),
                 route.getRoute_forward().get(0).getP_latitude(),
@@ -65,96 +65,100 @@ public class Driver implements Runnable{
                 UpdateFrequency,
                 speed) {
             @Override
-            public void startForward() {
+            public void startForward() {//установка начальной позиции
                 setLongitude(getStart_longitude());
                 setLatitude(getStart_latitude());
             }
 
             @Override
-            public void startBackward() {
+            public void startBackward() {//установка начальной позиции
                 setLongitude(getFinish_longitude());
                 setLatitude(getFinish_latitude());
             }
         };
 
-        Iterator<Point> routeIterator;
-        if(directionRoute){//Определение направления маршрута
-            transport_route.startForward();
-            routeIterator = route.getRoute_forward().iterator();
-        } else {
-            transport_route.startBackward();
-            routeIterator = route.getRoute_backward().iterator();
-        }
-        //текущая точка, следующая точка, промежуточная точка
-        Point currentPoint = routeIterator.next(), nextPoint = null, intermediatePoint = null;
-        System.out.println(currentPoint.getName() + " " + currentPoint.getP_longitude() + " " + currentPoint.getP_latitude());
-        long startTimeTimer = System.currentTimeMillis();//начальное время
-        long elapsedTime = 0; //прошедшее время
-        long timeAdd = 0;
-        //Цикл хождения по маршруту
-        //
-        while (routeIterator.hasNext()){
-            if(intermediatePoint == null){
-                nextPoint = routeIterator.next();
+        Iterator<Point> routeIterator;//итератор маршрута
+        while(true){
+            if(directionRoute){//Определение направления маршрута
+                transport_route.startForward();
+                routeIterator = route.getRoute_forward().iterator();
+            } else {
+                transport_route.startBackward();
+                routeIterator = route.getRoute_backward().iterator();
             }
-            //Расчет времени до следующей точки
-            long timeToNextPoint = Math.round(Calculations.timeDistance(
+            //текущая точка, следующая точка, промежуточная точка
+            Point currentPoint = routeIterator.next(), nextPoint = null, intermediatePoint = null;
+            System.out.println(currentPoint.getName() + " " + currentPoint.getP_longitude() + " " + currentPoint.getP_latitude());
+            long startTimeTimer = System.currentTimeMillis();//начальное время
+            long elapsedTime = 0; //прошедшее время
+            long timeAdd = 0;
+            //Цикл хождения по маршруту
+            //
+            while (routeIterator.hasNext()){
+                if(intermediatePoint == null){
+                    nextPoint = routeIterator.next();
+                }
+                //Расчет времени до следующей точки
+                long timeToNextPoint = Math.round(Calculations.timeDistance(
                     currentPoint.getP_latitude().doubleValue(),
                     currentPoint.getP_longitude().doubleValue(),
                     nextPoint.getP_latitude().doubleValue(),
                     nextPoint.getP_longitude().doubleValue(),
                     transport_route.getTransport_speed()));
 
-            if(elapsedTime + timeToNextPoint > 15 * 1000){
-                //Сколько времени транспорт будет ехать до 15 секунд
-                timeAdd = 15 * 1000 - elapsedTime;
-                //Расчет координаты точки через некоторое время
-                intermediatePoint = Calculations.givePointFromDistance(
+                if(elapsedTime + timeToNextPoint > 15 * 1000){
+                    //Сколько времени транспорт будет ехать до 15 секунд
+                    timeAdd = 15 * 1000 - elapsedTime;
+                    //Расчет координаты точки через некоторое время
+                    intermediatePoint = Calculations.givePointFromDistance(
                         currentPoint.getP_latitude().doubleValue(),
                         currentPoint.getP_longitude().doubleValue(),
                         (timeToNextPoint / 1000) * (speed / 3.6),
                         nextPoint.getP_latitude().doubleValue(),
                         nextPoint.getP_longitude().doubleValue());
-                transport_route.setCurrentCoordinates(intermediatePoint);
-                currentPoint = intermediatePoint;
-                elapsedTime = 0;
-            } else
-            if (elapsedTime + timeToNextPoint < 15 * 1000){
-                transport_route.setCurrentCoordinates(nextPoint);
-                currentPoint = nextPoint;
-                elapsedTime += timeToNextPoint;
-                intermediatePoint = null;
+                    transport_route.setCurrentCoordinates(intermediatePoint);
+                    currentPoint = intermediatePoint;
+                    elapsedTime = 0;
+                } else
+                if (elapsedTime + timeToNextPoint < 15 * 1000){
+                    transport_route.setCurrentCoordinates(nextPoint);
+                    currentPoint = nextPoint;
+                    elapsedTime += timeToNextPoint;
+                    intermediatePoint = null;
 
-            }else {
-                transport_route.setCurrentCoordinates(nextPoint);
-                currentPoint = nextPoint;
-                elapsedTime = 0;
-                intermediatePoint = null;
-            }
-
-            try {
-                Thread.currentThread().sleep(2*1000);//момент с отправкой еще будет дорабатываться
-                if(System.currentTimeMillis() - startTimeTimer >= 15*1000) {
-                    sendLocation(transport_route.getCurrentCoordinates());
-                    System.out.println(transport_route.getCurrentCoordinates().getP_longitude() + " " + transport_route.getCurrentCoordinates().getP_latitude());
-                    startTimeTimer = System.currentTimeMillis();
+                }else {
+                    transport_route.setCurrentCoordinates(nextPoint);
+                    currentPoint = nextPoint;
+                    elapsedTime = 0;
+                    intermediatePoint = null;
                 }
-            } catch (InterruptedException | IOException e) {
-                throw new RuntimeException(e);
-            }
-            if(currentPoint.hasName()){
-                System.out.println(currentPoint.getName() + " " + currentPoint.getP_longitude() + " " + currentPoint.getP_latitude());
-                System.out.println("Стою 15 секунд");
+
                 try {
-                    Thread.currentThread().sleep(15 * 1000);
-                    sendLocation(transport_route.getCurrentCoordinates());
+                    Thread.currentThread().sleep(2*1000);//момент с отправкой еще будет дорабатываться
+                    if(System.currentTimeMillis() - startTimeTimer >= 15*1000) {
+                        sendLocation(transport_route.getCurrentCoordinates());
+                        System.out.println(transport_route.getCurrentCoordinates().getP_longitude() + " " + transport_route.getCurrentCoordinates().getP_latitude());
+                        startTimeTimer = System.currentTimeMillis();
+                    }
                 } catch (InterruptedException | IOException e) {
                     throw new RuntimeException(e);
                 }
-            }else {
-                //System.out.println("Pass the point" + " " + nextPoint.getP_longitude() + " " + nextPoint.getP_latitude() + "  Времени потрачено: " + timeToNextPoint / 1000);
+                if(currentPoint.hasName()){
+                    System.out.println(currentPoint.getName() + " " + currentPoint.getP_longitude() + " " + currentPoint.getP_latitude());
+                    System.out.println("Стою 15 секунд");
+                    try {
+                        Thread.currentThread().sleep(15 * 1000);
+                        sendLocation(transport_route.getCurrentCoordinates());
+                    } catch (InterruptedException | IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }else {
+                    //System.out.println("Pass the point" + " " + nextPoint.getP_longitude() + " " + nextPoint.getP_latitude() + "  Времени потрачено: " + timeToNextPoint / 1000);
+                }
             }
-
+            
+            directionRoute = !directionRoute;
+            
         }
 
     }
@@ -194,5 +198,9 @@ public class Driver implements Runnable{
 
     private void sendLocation(Point currentPoint) throws IOException {
         request.SendingLocationRequest(authorizationToken, currentPoint.getP_latitude().toString(), currentPoint.getP_longitude().toString());
+    }
+    private void stopSession() throws IOException{
+        request.StopSessionRequest(authorizationToken, "Stopping");
+
     }
 }
