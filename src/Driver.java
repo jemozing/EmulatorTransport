@@ -1,4 +1,7 @@
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 import com.google.gson.JsonArray;
@@ -53,7 +56,7 @@ public class Driver implements Runnable{
             ListDriversCars();//получение списка машин доступных для водителя
             ListRoutes();//получения списка маршрутов
             ListOfSessions();//получение сессии
-            StartSessionA();//старт сессии
+            StartSessionA();//старт сессии //тут надо пытаться ловить время
             sessionId = informationAboutSession();//получение Id сессии
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -171,13 +174,40 @@ public class Driver implements Runnable{
                     }
                 }
             }
+            //вот это смена маршрута, смена ид сессии и проверка времени чтобы отправится обратно
             directionRoute = !directionRoute;
+            String dateString = "2023.";
             try {
-                sessionId = informationAboutSession();
+                response = request.InformationAboutTheCurrentSessionRequest(authorizationToken);
+                sessionId = response.getAsJsonObject("result").get("id").getAsInt();
+                currentSessionId = sessionId;
+                dateString += response.getAsJsonObject("result").get("start_at").getAsString();
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-
+            DateFormat dateFormat = new SimpleDateFormat("YYYY.dd.MM HH:mm");
+            Date date = null;
+            try {
+                date = dateFormat.parse(dateString);
+            } catch (ParseException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+            long serverTime = (long)date.getTime();
+            while(serverTime > System.currentTimeMillis()){
+                try {
+                    Thread.currentThread().sleep(serverTime - System.currentTimeMillis());
+                } catch (InterruptedException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+            try {
+                StartSessionA();
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
         }
 
     }
