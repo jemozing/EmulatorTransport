@@ -1,3 +1,6 @@
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -5,12 +8,16 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+
 public class Main {
 
+    private static final Logger logger = LoggerFactory.getLogger(Main.class);
+
     public static void main(String[] args) throws IOException {
-        System.out.println("Эмулятор транспорта версия 1");
-        System.out.println("Во избежании проблем советую приготовить огнетушитель");
-        System.out.println("Приятной DDOS атаки!");
+
+        logger.info("Эмулятор транспорта версия 1");
+        logger.info("Во избежании проблем советую приготовить огнетушитель");
+        logger.info("Приятной DDOS атаки!");
         HttpRequest request = new HttpRequest();
         DataBaseRequests dataBaseRequests = new DataBaseRequests();
         ConfigData.readConfigFile("config.csv");
