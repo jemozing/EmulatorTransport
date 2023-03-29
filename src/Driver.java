@@ -56,8 +56,51 @@ public class Driver implements Runnable{
             ListDriversCars();//получение списка машин доступных для водителя
             ListRoutes();//получения списка маршрутов
             ListOfSessions();//получение сессии
-            StartSessionA();//старт сессии //тут надо пытаться ловить время
-            sessionId = informationAboutSession();//получение Id сессии
+            //informationAboutRouteSession();
+            StartSessionA();
+            try {
+                //information about the current session
+                response = request.InformationAboutTheCurrentSessionRequest(authorizationToken);
+                Integer sessionId = response.getAsJsonObject("result").get("id").getAsInt();
+                if (sessionId>0) {
+                    request.StopSessionRequest(authorizationToken, "");
+                }
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            String dateString = "2023.";
+            try {
+                response = request.InformationAboutTheCurrentSessionRequest(authorizationToken);
+                sessionId = response.getAsJsonObject("result").get("id").getAsInt();
+                currentSessionId = sessionId;
+                dateString += response.getAsJsonObject("result").get("start_at").getAsString();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            DateFormat dateFormat = new SimpleDateFormat("YYYY.dd.MM HH:mm");
+            Date date = null;
+            try {
+                date = dateFormat.parse(dateString);
+            } catch (ParseException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+            long serverTime = (long)date.getTime();
+            while(serverTime > System.currentTimeMillis()){
+                try {
+                    Thread.currentThread().sleep(serverTime - System.currentTimeMillis());
+                } catch (InterruptedException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+            try {
+                StartSessionA();//старт сессии //тут надо пытаться ловить время
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+            sessionId = informationAboutSession();//получение Id сессии*/
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -253,8 +296,8 @@ public class Driver implements Runnable{
         return response.getAsJsonObject("result").get("id").getAsInt();
 
     }
-    private void stopSession() throws IOException{
-        request.StopSessionRequest(authorizationToken, "Stopping");
+    private void informationAboutRouteSession() throws IOException{
+        response = request.InformationAboutTheRouteOfTheCurrentSessionRequest(authorizationToken);
 
     }
 }

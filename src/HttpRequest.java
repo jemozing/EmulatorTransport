@@ -555,25 +555,32 @@ public class HttpRequest {
             con.setRequestProperty("Authorization", "Bearer " + AuthorizationKey);
             con.setRequestProperty("Content-Type", "application/json");
             con.setRequestProperty("Accept", "application/json");
+            int status = con.getResponseCode();
+            if (status == HttpURLConnection.HTTP_OK) {
+                try (var wr = new DataOutputStream(con.getOutputStream())) {
 
-            try (var wr = new DataOutputStream(con.getOutputStream())) {
-
-                wr.write(postData);
-            }
-
-            StringBuilder content;
-
-            try (var br = new BufferedReader(
-                    new InputStreamReader(con.getInputStream()))) {
-
-                String line;
-                content = new StringBuilder();
-
-                while ((line = br.readLine()) != null) {
-                    content.append(line);
-                    content.append(System.lineSeparator());
+                    wr.write(postData);
                 }
+            } else {
+                String s = con.getErrorStream().toString();
             }
+            status = con.getResponseCode();
+            StringBuilder content = null;
+            if (status == HttpURLConnection.HTTP_OK) {
+                try (var br = new BufferedReader(
+                        new InputStreamReader(con.getInputStream()))) {
+
+                    String line;
+                    content = new StringBuilder();
+
+                    while ((line = br.readLine()) != null) {
+                        content.append(line);
+                        content.append(System.lineSeparator());
+                    }
+                }
+            } else {
+            }
+
             JsonParser jsonParser = new JsonParser();
             jsonObject = (JsonObject) jsonParser.parse(content.toString());
             System.out.println(jsonObject.toString());
