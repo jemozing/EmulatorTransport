@@ -39,7 +39,8 @@ public class Main {
                     phoneNumbers.get(i),
                     pinCodes.get(i),
                     request,
-                    i%2==0));
+                    i%2==0,
+                    logger));
         }
         //request.AuthorizationRequest("7 000 000-00-01", "1111");
 

@@ -3,6 +3,8 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -20,8 +22,12 @@ public class Driver implements Runnable{
     JsonObject response;
     String authorizationToken;
     String carId, routeId, terminusId, startTime;// Id машины, маршрута, терминала, начальное время
-    int sessionId = 0 , currentSessionId = 0;
-    public Driver(RouteBase route, int movementInterval, int UpdateFrequency, double speed, String phone_number, String pin_code, HttpRequest request, boolean directionRoute){
+    Logger logger;
+    String sessionId = "0";
+    String currentSessionId = "0";
+    String currentSessionStatus = "0";
+    String[] data = new  String[3];
+    public Driver(RouteBase route, int movementInterval, int UpdateFrequency, double speed, String phone_number, String pin_code, HttpRequest request, boolean directionRoute, Logger logger){
         this.route = route;
         this.movementInterval = movementInterval;
         this.UpdateFrequency = UpdateFrequency;
@@ -30,7 +36,7 @@ public class Driver implements Runnable{
         this.pin_code = pin_code;
         this.request = request;
         this.directionRoute = directionRoute;
-
+        this.logger = logger;
     }
     @Override
     public void run() {
@@ -55,29 +61,17 @@ public class Driver implements Runnable{
             authorizationDriver();//авторизация
             ListDriversCars();//получение списка машин доступных для водителя
             ListRoutes();//получения списка маршрутов
-            ListOfSessions();//получение сессии
-            //informationAboutRouteSession();
-            StartSessionA();
-            try {
-                //information about the current session
-                response = request.InformationAboutTheCurrentSessionRequest(authorizationToken);
-                Integer sessionId = response.getAsJsonObject("result").get("id").getAsInt();
-                if (sessionId>0) {
-                    request.StopSessionRequest(authorizationToken, "");
-                }
-            } catch (IOException e) {
-                throw new RuntimeException(e);
+            data = ListOfSessions();//получение сессии и запись времени
+            startTime = data[0];
+            String dateString = data[1] + " " + data[0];
+            data = informationAboutSession();//получение Id сессии
+            sessionId = data[0];
+            if(!sessionId.equals("0")){
+                stopSession();
             }
-            String dateString = "2023.";
-            try {
-                response = request.InformationAboutTheCurrentSessionRequest(authorizationToken);
-                sessionId = response.getAsJsonObject("result").get("id").getAsInt();
-                currentSessionId = sessionId;
-                dateString += response.getAsJsonObject("result").get("start_at").getAsString();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-            DateFormat dateFormat = new SimpleDateFormat("YYYY.dd.MM HH:mm");
+
+
+            DateFormat dateFormat = new SimpleDateFormat("\"dd.MM.YYYY\" \"HH:mm\"");
             Date date = null;
             try {
                 date = dateFormat.parse(dateString);
@@ -100,7 +94,14 @@ public class Driver implements Runnable{
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             }
-            sessionId = informationAboutSession();//получение Id сессии*/
+            sessionId = informationAboutSession()[0];//получение Id сессии*/
+
+
+           /* data = StartSessionA();//старт сессии
+            currentSessionId = data[0];
+            currentSessionStatus = data[1];*/
+
+
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -130,7 +131,10 @@ public class Driver implements Runnable{
         Iterator<Point> routeIterator;//итератор маршрута
         while(true) {
             try {
-                currentSessionId = informationAboutSession();
+                String curSession[] = new String[2];
+                curSession = informationAboutSession();
+                currentSessionId = curSession[0];
+                currentSessionStatus = curSession[1];
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -150,7 +154,7 @@ public class Driver implements Runnable{
             //Цикл хождения по маршруту
             //
             while (routeIterator.hasNext()) {
-                if (sessionId == currentSessionId) {
+                if (currentSessionStatus.equals("WAIT_TO_START")) {
                     if (intermediatePoint == null) {
                         nextPoint = routeIterator.next();
                     }
@@ -196,15 +200,15 @@ public class Driver implements Runnable{
                         }
                         if (elapsedTime == 0) {
                             sendLocation(transport_route.getCurrentCoordinates());
-                            System.out.println(transport_route.getCurrentCoordinates().getP_longitude() + " " + transport_route.getCurrentCoordinates().getP_latitude());
+                            logger.info(transport_route.getCurrentCoordinates().getP_longitude() + " " + transport_route.getCurrentCoordinates().getP_latitude());
                             startTimeTimer = System.currentTimeMillis();
                         }
                     } catch (InterruptedException | IOException e) {
                         throw new RuntimeException(e);
                     }
                     if (currentPoint.hasName()) {
-                        System.out.println(currentPoint.getName() + " " + currentPoint.getP_longitude() + " " + currentPoint.getP_latitude());
-                        System.out.println("Стою 15 секунд");
+                        logger.info(currentPoint.getName() + " " + currentPoint.getP_longitude() + " " + currentPoint.getP_latitude());
+                        logger.info("Стою 15 секунд");
                         try {
                             Thread.currentThread().sleep(15 * 1000);
                             sendLocation(transport_route.getCurrentCoordinates());
@@ -219,12 +223,13 @@ public class Driver implements Runnable{
             }
             //вот это смена маршрута, смена ид сессии и проверка времени чтобы отправится обратно
             directionRoute = !directionRoute;
-            String dateString = "2023.";
+            String dateString = "";
             try {
-                response = request.InformationAboutTheCurrentSessionRequest(authorizationToken);
-                sessionId = response.getAsJsonObject("result").get("id").getAsInt();
+                data = informationAboutSession();
+                sessionId = data[0];
                 currentSessionId = sessionId;
-                dateString += response.getAsJsonObject("result").get("start_at").getAsString();
+                currentSessionStatus = data[1];
+                dateString = data[2];
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -279,25 +284,42 @@ public class Driver implements Runnable{
         routeId = jArray.get(0).getAsJsonObject().get("id").toString();
         terminusId = jArray.get(0).getAsJsonObject().get("terminus").getAsJsonArray().get(0).getAsJsonObject().get("id").toString();
     }
-    private void ListOfSessions() throws IOException {
+    private String[] ListOfSessions() throws IOException {
+        String s[] = new String[2];
         response = request.ListOfSessionTimesToGetStartedRequest(authorizationToken, carId, routeId, terminusId);
         JsonObject jo = response.getAsJsonObject("result");
-        startTime = jo.getAsJsonObject().get("times").getAsJsonArray().get(0).getAsJsonObject().get("time").toString();
+        s[0] = jo.getAsJsonObject().get("times").getAsJsonArray().get(0).getAsJsonObject().get("time").toString();
+        s[1] = jo.getAsJsonObject().get("times").getAsJsonArray().get(0).getAsJsonObject().get("date").toString();
+        return s;
     }
-    private void StartSessionA() throws IOException {
-        request.StartSessionTypeARequest(authorizationToken, carId, routeId, terminusId, startTime);
+    private String[] StartSessionA() throws IOException {
+        response = request.StartSessionTypeARequest(authorizationToken, carId, routeId, terminusId, startTime);
+        String s[] = new String[3];
+        s[0] = response.getAsJsonObject("result").getAsJsonPrimitive("id").getAsString();
+        s[1] = response.getAsJsonObject("result").getAsJsonPrimitive("status").getAsString();
+        s[2] = response.getAsJsonObject("result").get("start_at").getAsString();
+        return s;
     }
 
     private void sendLocation(Point currentPoint) throws IOException {
         request.SendingLocationRequest(authorizationToken, currentPoint.getP_latitude().toString(), currentPoint.getP_longitude().toString());
     }
-    private int informationAboutSession() throws IOException {
-        response = request.InformationAboutTheCurrentSessionRequest(authorizationToken);
-        return response.getAsJsonObject("result").get("id").getAsInt();
-
+    private String[] informationAboutSession() throws IOException {
+        try {
+            response = request.InformationAboutTheCurrentSessionRequest(authorizationToken);
+            String s[] = new String[3];
+            s[0] = response.getAsJsonObject("result").getAsJsonPrimitive("id").getAsString();
+            s[1] = response.getAsJsonObject("result").getAsJsonPrimitive("status").getAsString();
+            s[2] = response.getAsJsonObject("result").get("start_at").getAsString();
+            return s;
+        }
+        catch (ClassCastException e) {
+            String s[] = {"0","error","0"};
+            return s;
+        }
     }
-    private void informationAboutRouteSession() throws IOException{
-        response = request.InformationAboutTheRouteOfTheCurrentSessionRequest(authorizationToken);
+    private void stopSession() throws IOException{
+        request.StopSessionRequest(authorizationToken, "Stopping");
 
     }
 }

@@ -540,7 +540,7 @@ public class HttpRequest {
     }
     //POST
     //Старт сессии регулируемого маршрута
-    public void StartSessionTypeARequest(String AuthorizationKey, String car_id, String route_id, String terminus_id, String time) throws IOException {
+    public JsonObject StartSessionTypeARequest(String AuthorizationKey, String car_id, String route_id, String terminus_id, String time) throws IOException {
         var url = "https://devsrv.ru/api/v1/driver/session/start/a";
         var urlParameters = "{\"car_id\":\""+car_id+"\",\"route_id\":\""+route_id+"\",\"terminus_id\":\""+terminus_id+"\",\"time\":"+time+"}";
         byte[] postData = urlParameters.getBytes(UTF_8);
@@ -589,6 +589,7 @@ public class HttpRequest {
 
             con.disconnect();
         }
+        return jsonObject;
     }
     //POST
     //Продолжить работу на регулируемом маршруте
