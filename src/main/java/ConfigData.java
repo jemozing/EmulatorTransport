@@ -1,3 +1,5 @@
+import org.slf4j.Logger;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -5,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 public class ConfigData {
+    static Logger logger = Main.getLogger();
     private static ArrayList<SettingRoute> settingRoutesData = new ArrayList<SettingRoute>(); //Список с настройками маршрутов
 
     public static void readConfigFile(String pathname) throws IOException { //Чтение файла с маршрутами
@@ -15,9 +18,9 @@ public class ConfigData {
             //парсим строку в объект Employee
             SettingRoute setting = parseCSVLine(scanner.next());
             settingRoutesData.add(setting);
-            System.out.println(setting.toString());
+            logger.info(setting.toString());
         }
-        System.out.println(settingRoutesData.size());
+        logger.info(Integer.toString(settingRoutesData.size()));
         scanner.close();
     }
 

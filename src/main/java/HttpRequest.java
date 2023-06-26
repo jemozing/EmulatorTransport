@@ -1,5 +1,6 @@
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import org.slf4j.Logger;
 
 import java.io.*;
 import java.net.HttpURLConnection;
@@ -8,6 +9,7 @@ import java.net.URL;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class HttpRequest {
+    Logger logger = Main.getLogger();
     private HttpURLConnection con;
     private JsonObject jsonObject;
     //POST
@@ -16,7 +18,7 @@ public class HttpRequest {
         var url = "https://devsrv.ru/api/v1/driver/auth/login";
         var urlParameters = "{\"phone\":\""+ phone +"\",\"pin_code\":\""+ pin_code  +"\"}";
         byte[] postData = urlParameters.getBytes(UTF_8);
-
+        logger.info(url + "  " + urlParameters);
         try {
 
             var myurl = new URL(url);
@@ -47,7 +49,7 @@ public class HttpRequest {
             }
             JsonParser jsonParser = new JsonParser();
             jsonObject = (JsonObject) jsonParser.parse(content.toString());
-            System.out.println(jsonObject.toString());
+            logger.info(jsonObject.toString());
 
         } finally {
 
@@ -61,6 +63,7 @@ public class HttpRequest {
         var url = "https://devsrv.ru/api/v1/driver/event/send";
         var urlParameters = "{\"event_id\":\"" + EventMessageOptional + "\"}";
         byte[] postData = urlParameters.getBytes(UTF_8);
+        logger.info(url + "  " + urlParameters);
 
         try {
 
@@ -92,7 +95,7 @@ public class HttpRequest {
             }
             JsonParser jsonParser = new JsonParser();
             jsonObject = (JsonObject) jsonParser.parse(content.toString());
-            System.out.println(jsonObject.toString());
+            logger.info(jsonObject.toString());
 
         } finally {
 
@@ -105,6 +108,7 @@ public class HttpRequest {
         var url = "https://devsrv.ru/api/v1/driver/schedule";
         var urlParameters = "{\"route_id\":\"" + route_id + "\"}";
         byte[] postData = urlParameters.getBytes(UTF_8);
+        logger.info(url + "  " + urlParameters);
         try {
 
             var myurl = new URL(url);
@@ -135,11 +139,11 @@ public class HttpRequest {
 
             JsonParser jsonParser = new JsonParser();
             jsonObject = (JsonObject) jsonParser.parse(content.toString());
-            System.out.println(jsonObject.toString());
+            logger.info(jsonObject.toString());
 
         }
         catch (IOException e) {
-            System.out.println("Сервер не отвечает");
+            logger.info("Сервер не отвечает");
         }
         finally {
 
@@ -151,7 +155,7 @@ public class HttpRequest {
     //Список автомобилей
     public JsonObject ListOfDriversCarsRequest(String AuthorizationKey) throws IOException {
         var url = "https://devsrv.ru/api/v1/driver/car";
-
+        logger.info(url);
         try {
 
             var myurl = new URL(url);
@@ -165,7 +169,7 @@ public class HttpRequest {
 
             try (BufferedReader in = new BufferedReader(
                     new InputStreamReader(con.getInputStream()))) {
-
+                logger.info(con.getResponseMessage());
                 String line;
                 content = new StringBuilder();
 
@@ -178,7 +182,7 @@ public class HttpRequest {
 
             JsonParser jsonParser = new JsonParser();
             jsonObject = (JsonObject) jsonParser.parse(content.toString());
-            System.out.println(jsonObject.toString());
+            logger.info(jsonObject.toString());
 
         } finally {
 
@@ -190,7 +194,7 @@ public class HttpRequest {
     //Список маршрутов по выбранному автомобилю
     public JsonObject ListOfRoutesForTheSelectedCarRequest(String AuthorizationKey, String car_id) throws IOException {
         var url = "https://devsrv.ru/api/v1/driver/car/" + car_id + "/routes";
-
+        logger.info(url);
         try {
 
             var myurl = new URL(url);
@@ -217,11 +221,11 @@ public class HttpRequest {
 
             JsonParser jsonParser = new JsonParser();
             jsonObject = (JsonObject) jsonParser.parse(content.toString());
-            System.out.println(jsonObject.toString());
+            logger.info(jsonObject.toString());
 
         }
         catch (IOException e) {
-            System.out.println("Сервер не отвечает");
+            logger.info("Сервер не отвечает");
         }
         finally {
 
@@ -233,7 +237,7 @@ public class HttpRequest {
     //Информация о текущий сессии
     public JsonObject InformationAboutTheCurrentSessionRequest(String AuthorizationKey) throws IOException {
         var url = "https://devsrv.ru/api/v1/driver/session";
-
+        logger.info(url);
         try {
 
             var myurl = new URL(url);
@@ -260,11 +264,11 @@ public class HttpRequest {
 
             JsonParser jsonParser = new JsonParser();
             jsonObject = (JsonObject) jsonParser.parse(content.toString());
-            System.out.println(jsonObject.toString());
+            logger.info(jsonObject.toString());
 
         }
         catch (IOException e) {
-            System.out.println("Сервер не отвечает");
+            logger.info("Сервер не отвечает");
         }
         finally {
 
@@ -276,7 +280,7 @@ public class HttpRequest {
     //Информация об оптимальной дистанции и другая статистика
     public JsonObject InformationAboutDistanceAndOtherStatistic(String AuthorizationKey) throws IOException {
         var url = "https://devsrv.ru/api/v1/driver/session/info";
-
+        logger.info(url);
         try {
 
             var myurl = new URL(url);
@@ -303,11 +307,11 @@ public class HttpRequest {
 
             JsonParser jsonParser = new JsonParser();
             jsonObject = (JsonObject) jsonParser.parse(content.toString());
-            System.out.println(jsonObject.toString());
+            logger.info(jsonObject.toString());
 
         }
         catch (IOException e) {
-            System.out.println("Сервер не отвечает");
+            logger.info("Сервер не отвечает");
         }
         finally {
 
@@ -322,6 +326,7 @@ public class HttpRequest {
                 "?route_id=" + route_id +
                 "&car_id=" + car_id +
                 "&terminus_id=" + terminus_id;
+        logger.info(url);
         try {
 
             var myurl = new URL(url);
@@ -349,11 +354,11 @@ public class HttpRequest {
 
             JsonParser jsonParser = new JsonParser();
             jsonObject = (JsonObject) jsonParser.parse(content.toString());
-            System.out.println(jsonObject.toString());
+            logger.info(jsonObject.toString());
 
         }
         catch (IOException e) {
-            System.out.println("Сервер не отвечает");
+            logger.info("Сервер не отвечает");
         }
         finally {
 
@@ -365,7 +370,7 @@ public class HttpRequest {
     //Информация о текущем маршруте
     public JsonObject InformationAboutTheRouteOfTheCurrentSessionRequest(String AuthorizationKey) throws IOException {
         var url = "https://devsrv.ru/api/v1/driver/session/route";
-
+        logger.info(url);
         try {
 
             var myurl = new URL(url);
@@ -392,11 +397,11 @@ public class HttpRequest {
 
             JsonParser jsonParser = new JsonParser();
             jsonObject = (JsonObject) jsonParser.parse(content.toString());
-            System.out.println(jsonObject.toString());
+            logger.info(jsonObject.toString());
 
         }
         catch (IOException e) {
-            System.out.println("Сервер не отвечает");
+            logger.info("Сервер не отвечает");
         }
         finally {
 
@@ -411,6 +416,7 @@ public class HttpRequest {
         var urlParameters = "{\"lat\":\""+latiude+"\",\"lon\":\""+longtiude+"\"}";
         byte[] postData = urlParameters.getBytes(UTF_8);
         JsonObject jsonObject;
+        logger.info(url + "  " + urlParameters);
         try {
 
             var myurl = new URL(url);
@@ -441,7 +447,7 @@ public class HttpRequest {
             }
             JsonParser jsonParser = new JsonParser();
             jsonObject = (JsonObject) jsonParser.parse(content.toString());
-            System.out.println(jsonObject.toString());
+            logger.info(jsonObject.toString());
 
         } finally {
 
@@ -455,6 +461,7 @@ public class HttpRequest {
         var urlParameters = "{}";
         byte[] postData = urlParameters.getBytes(UTF_8);
         JsonObject jsonObject;
+        logger.info(url + "  " + urlParameters);
         try {
 
             var myurl = new URL(url);
@@ -486,7 +493,7 @@ public class HttpRequest {
             }
             JsonParser jsonParser = new JsonParser();
             jsonObject = (JsonObject) jsonParser.parse(content.toString());
-            System.out.println(jsonObject.toString());
+            logger.info(jsonObject.toString());
 
         } finally {
 
@@ -500,6 +507,7 @@ public class HttpRequest {
         var urlParameters = "{\"reason\":\""+reason_optional+"\"}";
         byte[] postData = urlParameters.getBytes(UTF_8);
         JsonObject jsonObject;
+        logger.info(url + "  " + urlParameters);
         try {
 
             var myurl = new URL(url);
@@ -531,7 +539,7 @@ public class HttpRequest {
             }
             JsonParser jsonParser = new JsonParser();
             jsonObject = (JsonObject) jsonParser.parse(content.toString());
-            System.out.println(jsonObject.toString());
+            logger.info(jsonObject.toString());
 
         } finally {
 
@@ -542,9 +550,10 @@ public class HttpRequest {
     //Старт сессии регулируемого маршрута
     public JsonObject StartSessionTypeARequest(String AuthorizationKey, String car_id, String route_id, String terminus_id, String time) throws IOException {
         var url = "https://devsrv.ru/api/v1/driver/session/start/a";
-        var urlParameters = "{\"car_id\":\""+car_id+"\",\"route_id\":\""+route_id+"\",\"terminus_id\":\""+terminus_id+"\",\"time\":"+time+"}";
+        var urlParameters = "{\"car_id\":\""+car_id+"\",\"route_id\":\""+route_id+"\",\"terminus_id\":\""+terminus_id+"\",\"time\":\""+time+"\"}";
         byte[] postData = urlParameters.getBytes(UTF_8);
         JsonObject jsonObject;
+        logger.info(url + "  " + urlParameters);
         try {
 
             var myurl = new URL(url);
@@ -556,6 +565,7 @@ public class HttpRequest {
             con.setRequestProperty("Content-Type", "application/json");
             con.setRequestProperty("Accept", "application/json");
             int status = con.getResponseCode();
+
             if (status == HttpURLConnection.HTTP_OK) {
                 try (var wr = new DataOutputStream(con.getOutputStream())) {
 
@@ -563,6 +573,7 @@ public class HttpRequest {
                 }
             } else {
                 String s = con.getErrorStream().toString();
+                logger.info(status + "  " + s);
             }
             status = con.getResponseCode();
             StringBuilder content = null;
@@ -583,7 +594,7 @@ public class HttpRequest {
 
             JsonParser jsonParser = new JsonParser();
             jsonObject = (JsonObject) jsonParser.parse(content.toString());
-            System.out.println(jsonObject.toString());
+            logger.info(jsonObject.toString());
 
         } finally {
 
@@ -598,6 +609,7 @@ public class HttpRequest {
         var urlParameters = "{\"car_id\":\""+car_id+"\",\"route_id\":\""+route_id+"\",\"terminus_id\":\""+terminus_id+"\"}";
         byte[] postData = urlParameters.getBytes(UTF_8);
         JsonObject jsonObject;
+        logger.info(url + "  " + urlParameters);
         try {
 
             var myurl = new URL(url);
@@ -629,7 +641,7 @@ public class HttpRequest {
             }
             JsonParser jsonParser = new JsonParser();
             jsonObject = (JsonObject) jsonParser.parse(content.toString());
-            System.out.println(jsonObject.toString());
+            logger.info(jsonObject.toString());
 
         } finally {
 

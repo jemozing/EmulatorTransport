@@ -2,6 +2,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import org.slf4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
@@ -12,7 +13,7 @@ import java.util.List;
 import java.util.Scanner;
 
 public class DataBaseRequests {
-
+    static Logger logger = Main.getLogger();
     HashMap <String, RouteBase> baseData = new HashMap<>();
 
     public RouteBase readDataBase(String pathname) throws IOException {
@@ -36,10 +37,9 @@ public class DataBaseRequests {
         route_backward_buffer.append("}]");
         sc.close();
 
-        JsonParser jsonParser = new JsonParser();
-        JsonArray json_forward = (JsonArray) jsonParser.parse(route_forward_buffer.toString().replace("\"\"", "\""));
-        JsonArray json_backward = (JsonArray) jsonParser.parse(route_backward_buffer.toString().replace("\"\"", "\""));
-        System.out.println(json_forward.toString());
+        JsonArray json_forward = (JsonArray) JsonParser.parseString(route_forward_buffer.toString().replace("\"\"", "\""));
+        JsonArray json_backward = (JsonArray) JsonParser.parseString(route_backward_buffer.toString().replace("\"\"", "\""));
+        logger.info(json_forward.toString());
         JsonObject object;
         String name;
         for(JsonElement element : json_forward){
@@ -189,8 +189,6 @@ class Point{
     public boolean hasName(){
         if (name == null){
             return false;
-        } else if (name.isEmpty()) {
-            return false;
-        } else return true;
+        } else return !name.isEmpty();
     }
 }

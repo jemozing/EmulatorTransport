@@ -71,7 +71,7 @@ public class Driver implements Runnable{
             }
 
 
-            DateFormat dateFormat = new SimpleDateFormat("\"dd.MM.YYYY\" \"HH:mm\"");
+            DateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy HH:mm");
             Date date = null;
             try {
                 date = dateFormat.parse(dateString);
@@ -80,9 +80,12 @@ public class Driver implements Runnable{
                 e.printStackTrace();
             }
             long serverTime = (long)date.getTime();
-            while(serverTime > System.currentTimeMillis()){
+            long pcTime = System.currentTimeMillis();
+            while(serverTime > pcTime){
                 try {
-                    Thread.currentThread().sleep(serverTime - System.currentTimeMillis());
+
+                    Thread.currentThread().sleep(serverTime - System.currentTimeMillis()-2000);
+                    break;
                 } catch (InterruptedException e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
@@ -147,7 +150,7 @@ public class Driver implements Runnable{
             }
             //текущая точка, следующая точка, промежуточная точка
             Point currentPoint = routeIterator.next(), nextPoint = null, intermediatePoint = null;
-            System.out.println(currentPoint.getName() + " " + currentPoint.getP_longitude() + " " + currentPoint.getP_latitude());
+            logger.info(currentPoint.getName() + " " + currentPoint.getP_longitude() + " " + currentPoint.getP_latitude());
             long startTimeTimer = System.currentTimeMillis();//начальное время
             long elapsedTime = 0; //прошедшее время
             long timeAdd = 0;
@@ -217,7 +220,7 @@ public class Driver implements Runnable{
                             throw new RuntimeException(e);
                         }
                     } else {
-                        //System.out.println("Pass the point" + " " + nextPoint.getP_longitude() + " " + nextPoint.getP_latitude() + "  Времени потрачено: " + timeToNextPoint / 1000);
+                        //logger.info("Pass the point" + " " + nextPoint.getP_longitude() + " " + nextPoint.getP_latitude() + "  Времени потрачено: " + timeToNextPoint / 1000);
                     }
                 }
             }
@@ -269,7 +272,7 @@ public class Driver implements Runnable{
         scanner.useDelimiter("\\|");
         scanner.next();
         authorizationToken = scanner.next();
-        System.out.println(authorizationToken);
+        logger.info(authorizationToken);
         //request.StartSessionTypeARequest(authorizationToken, "123", "421", "321", "10");
     }
     private void ListDriversCars() throws IOException {
@@ -288,8 +291,8 @@ public class Driver implements Runnable{
         String s[] = new String[2];
         response = request.ListOfSessionTimesToGetStartedRequest(authorizationToken, carId, routeId, terminusId);
         JsonObject jo = response.getAsJsonObject("result");
-        s[0] = jo.getAsJsonObject().get("times").getAsJsonArray().get(0).getAsJsonObject().get("time").toString();
-        s[1] = jo.getAsJsonObject().get("times").getAsJsonArray().get(0).getAsJsonObject().get("date").toString();
+        s[0] = jo.getAsJsonObject().get("times").getAsJsonArray().get(0).getAsJsonObject().get("time").getAsString();
+        s[1] = jo.getAsJsonObject().get("times").getAsJsonArray().get(0).getAsJsonObject().get("date").getAsString();
         return s;
     }
     private String[] StartSessionA() throws IOException {

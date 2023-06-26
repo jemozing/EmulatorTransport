@@ -26,7 +26,7 @@ public class Main {
         }
         while (iter.hasNext()){
             SettingRoute setting = (SettingRoute) iter.next();
-            dataBaseRequests.addData(setting.getRoute_id(), dataBaseRequests.readDataBase("src/RouteFiles/" + setting.getRoute_id()  + ".csv"));
+            dataBaseRequests.addData(setting.getRoute_id(), dataBaseRequests.readDataBase("src/main/java/RouteFiles/" + setting.getRoute_id()  + ".csv"));
         }
         //Основные потоки с водителями
         ExecutorService pool = Executors.newCachedThreadPool();
@@ -46,5 +46,7 @@ public class Main {
 
     }
 
-
+    public static Logger getLogger() {
+        return logger;
+    }
 }
