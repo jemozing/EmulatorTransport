@@ -1,13 +1,15 @@
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import org.slf4j.Logger;
+
+
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.Scanner;
 public class Driver implements Runnable{
     RouteBase route;
     Transport transport_route;

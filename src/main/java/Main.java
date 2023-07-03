@@ -1,3 +1,7 @@
+
+
+
+import org.apache.log4j.PropertyConfigurator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -11,6 +15,7 @@ import java.util.concurrent.Executors;
 public class Main {
     private static final Logger logger = LoggerFactory.getLogger(Main.class);
     public static void main(String[] args) throws IOException {
+        PropertyConfigurator.configure("log4j.properties");
         logger.info("Эмулятор транспорта версия 1");
         logger.info("Во избежании проблем советую приготовить огнетушитель");
         logger.info("Приятной DDOS атаки!");
