@@ -1,34 +1,40 @@
-
-
-
+import lombok.extern.slf4j.Slf4j;
 import org.apache.log4j.PropertyConfigurator;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Iterator;
-import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+@Slf4j
 public class Main {
-    private static final Logger logger = LoggerFactory.getLogger(Main.class);
     public static void main(String[] args) throws IOException {
+        // Создаем папку "Logs", если она не существует
+        File logsDir = new File("Logs");
+        if (!logsDir.exists()) {
+            logsDir.mkdir();
+        }
+        // Генерируем имя файла лога с текущим временем и числом
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss_S");
+        String logFileName = "Logs/log_" + dateFormat.format(new Date()) + ".log";
+        // Устанавливаем путь к файлу лога в системное свойство
+        System.setProperty("logFilename", logFileName);
+        // Загружаем конфигурацию Log4j
         PropertyConfigurator.configure("log4j.properties");
-        logger.info("Эмулятор транспорта версия 1");
-        logger.info("Во избежании проблем советую приготовить огнетушитель");
-        logger.info("Приятной DDOS атаки!");
+
+        log.info("Эмулятор транспорта версия 1");
+        log.info("Во избежании проблем советую приготовить огнетушитель");
+        log.info("Приятной DDOS атаки!");
+
         HttpRequest request = new HttpRequest();
         DataBaseRequests dataBaseRequests = new DataBaseRequests();
         ConfigData.readConfigFile("config.csv");
         Iterator iter = ConfigData.getSettingRoutesData().iterator();
-        ArrayList<String> phoneNumbers = new ArrayList<String>();
-        ArrayList<String> pinCodes = new ArrayList<String>();
-        for (int i = 0; i < ConfigData.getSettingRoutesData().get(0).getNumberOfCars(); i++) {
-            phoneNumbers.add("7 000 000-00-0" + (i + 1));
-            pinCodes.add("1111");
-        }
+        ArrayList<Account> accounts = AccountCSVReader.CSVRead();
         while (iter.hasNext()){
             SettingRoute setting = (SettingRoute) iter.next();
             dataBaseRequests.addData(setting.getRoute_id(), dataBaseRequests.readDataBase("src/main/java/RouteFiles/" + setting.getRoute_id()  + ".csv"));
@@ -41,17 +47,10 @@ public class Main {
                     ConfigData.getSettingRoutesData().get(0).getMovementInterval()*i,
                     ConfigData.getSettingRoutesData().get(0).getUpdateFrequency(),
                     ConfigData.getSettingRoutesData().get(0).getSpeed(),
-                    phoneNumbers.get(i),
-                    pinCodes.get(i),
+                    accounts.get(i).getLogin(),
+                    accounts.get(i).getPassword(),
                     request,
-                    i%2==0,
-                    logger));
+                    i%2==0));
         }
-        //request.AuthorizationRequest("7 000 000-00-01", "1111");
-
-    }
-
-    public static Logger getLogger() {
-        return logger;
     }
 }

@@ -1,8 +1,7 @@
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import org.slf4j.Logger;
-
-
+import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -10,26 +9,27 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Scanner;
+
 public class Driver implements Runnable{
     RouteBase route;
     Transport transport_route;
     int movementInterval;
     int UpdateFrequency;
     double speed;
-
     String phone_number;
     String pin_code;
-    boolean directionRoute = true;
+    boolean directionRoute;
     HttpRequest request;
     JsonObject response;
     String authorizationToken;
     String carId, routeId, terminusId, startTime;// Id машины, маршрута, терминала, начальное время
-    Logger logger;
+    private static final Logger logger = LoggerFactory.getLogger(Driver.class);
     String sessionId = "0";
     String currentSessionId = "0";
     String currentSessionStatus = "0";
     String[] data = new  String[3];
-    public Driver(RouteBase route, int movementInterval, int UpdateFrequency, double speed, String phone_number, String pin_code, HttpRequest request, boolean directionRoute, Logger logger){
+    String[] sessionData = new String[3];
+    public Driver(RouteBase route, int movementInterval, int UpdateFrequency, double speed, String phone_number, String pin_code, HttpRequest request, boolean directionRoute){
         this.route = route;
         this.movementInterval = movementInterval;
         this.UpdateFrequency = UpdateFrequency;
@@ -38,7 +38,6 @@ public class Driver implements Runnable{
         this.pin_code = pin_code;
         this.request = request;
         this.directionRoute = directionRoute;
-        this.logger = logger;
     }
     @Override
     public void run() {
@@ -55,9 +54,9 @@ public class Driver implements Runnable{
         // После задается начальная координата транспорта
         // И начинается обход маршрута по точкам с обозначение промежуточных точек
         try {
-            Thread.currentThread().sleep(movementInterval * 1000);//начальная задержка между отправками водителей
+            Thread.sleep(movementInterval * 1000L);//начальная задержка между отправками водителей
         } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+            logger.error(e.toString());
         }
         try {
             authorizationDriver();//авторизация
@@ -70,44 +69,39 @@ public class Driver implements Runnable{
             sessionId = data[0];
             if(!sessionId.equals("0")){
                 stopSession();
+                logger.debug("Остановка начатой сессии");
             }
-
-
-            DateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy HH:mm");
-            Date date = null;
-            try {
-                date = dateFormat.parse(dateString);
-            } catch (ParseException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+            ContiniumSessionA();
+            sessionData = informationAboutSession();
+            if (sessionData[1].equals("ON_ROUTE")){
+                logger.debug("Уже на маршруте");
             }
-            long serverTime = (long)date.getTime();
-            long pcTime = System.currentTimeMillis();
-            while(serverTime > pcTime){
+            if (sessionData[1].equals("ON_QUEUE")){
+                //seconds_left - это время до начала поездки у маршрута, нужно просто ее взять и ожидать это время
                 try {
-
-                    Thread.currentThread().sleep(serverTime - System.currentTimeMillis()-2000);
-                    break;
+                    Thread.sleep(Integer.parseInt(sessionData[2])*1000L - 2000);
                 } catch (InterruptedException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
+                    logger.error(e.getMessage());
                 }
             }
-            try {
-                StartSessionA();//старт сессии //тут надо пытаться ловить время
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+            if (sessionData[1].equals("WAIT_TO_START")){
+                //Ждем время для начала отправки машины
+                    try {
+                        Thread.sleep(Integer.parseInt(sessionData[2])*1000L - 2000);
+                    } catch (InterruptedException e) {
+                        logger.error(e.getMessage());
+                    }
             }
-            sessionId = informationAboutSession()[0];//получение Id сессии*/
 
+            //StartSessionA();//старт сессии //тут надо пытаться ловить время
+            sessionId = informationAboutSession()[0];//получение Id сессии*/
 
            /* data = StartSessionA();//старт сессии
             currentSessionId = data[0];
             currentSessionStatus = data[1];*/
 
-
         } catch (IOException e) {
+            logger.error(e.getMessage());
             throw new RuntimeException(e);
         }
         //создание транспорта для водителя с указанным параметрами и добавление функций
@@ -116,7 +110,7 @@ public class Driver implements Runnable{
                 route.getRoute_forward().get(0).getP_latitude(),
                 route.getRoute_forward().get(route.getRoute_forward().size() - 1).getP_latitude(),
                 route.getRoute_forward().get(route.getRoute_forward().size() - 1).getP_longitude(),
-                route.name,
+                route.getName(),
                 route.getNumber(),
                 UpdateFrequency,
                 speed) {
@@ -134,9 +128,9 @@ public class Driver implements Runnable{
         };
 
         Iterator<Point> routeIterator;//итератор маршрута
+        String[] curSession;
         while(true) {
             try {
-                String curSession[] = new String[2];
                 curSession = informationAboutSession();
                 currentSessionId = curSession[0];
                 currentSessionStatus = curSession[1];
@@ -152,14 +146,14 @@ public class Driver implements Runnable{
             }
             //текущая точка, следующая точка, промежуточная точка
             Point currentPoint = routeIterator.next(), nextPoint = null, intermediatePoint = null;
-            logger.info(currentPoint.getName() + " " + currentPoint.getP_longitude() + " " + currentPoint.getP_latitude());
+            logger.info("Начинаю поездку с конечной точки");
+            logger.info("Текущая точка: " + currentPoint.getName() + " " + currentPoint.getP_longitude() + " " + currentPoint.getP_latitude());
             long startTimeTimer = System.currentTimeMillis();//начальное время
             long elapsedTime = 0; //прошедшее время
             long timeAdd = 0;
             //Цикл хождения по маршруту
-            //
             while (routeIterator.hasNext()) {
-                if (currentSessionStatus.equals("WAIT_TO_START")) {
+                if (currentSessionStatus.equals("WAIT_TO_START") || currentSessionStatus.equals("ON_ROUTE") || currentSessionStatus.equals("ON_QUEUE")) {
                     if (intermediatePoint == null) {
                         nextPoint = routeIterator.next();
                     }
@@ -199,132 +193,215 @@ public class Driver implements Runnable{
 
                     try {
                         if(elapsedTime != 0){
-                            Thread.currentThread().sleep(elapsedTime);//ожидание
+                            Thread.sleep(elapsedTime);//ожидание
                         }else {
-                            Thread.currentThread().sleep(timeAdd);//ожидание
+                            Thread.sleep(timeAdd);//ожидание
                         }
                         if (elapsedTime == 0) {
                             sendLocation(transport_route.getCurrentCoordinates());
-                            logger.info(transport_route.getCurrentCoordinates().getP_longitude() + " " + transport_route.getCurrentCoordinates().getP_latitude());
+                            logger.info("Текущая геопозиция: " + transport_route.getCurrentCoordinates().getP_longitude() + " " + transport_route.getCurrentCoordinates().getP_latitude());
                             startTimeTimer = System.currentTimeMillis();
                         }
-                    } catch (InterruptedException | IOException e) {
+                    } catch (InterruptedException e) {
+                        logger.error(e.getMessage());
                         throw new RuntimeException(e);
                     }
                     if (currentPoint.hasName()) {
-                        logger.info(currentPoint.getName() + " " + currentPoint.getP_longitude() + " " + currentPoint.getP_latitude());
+                        logger.info("Текущая остановка: " + currentPoint.getName() + " " + currentPoint.getP_longitude() + " " + currentPoint.getP_latitude());
                         logger.info("Стою 15 секунд");
                         try {
-                            Thread.currentThread().sleep(15 * 1000);
+                            Thread.sleep(15L * 1000L);
                             sendLocation(transport_route.getCurrentCoordinates());
                             elapsedTime = 0;
-                        } catch (InterruptedException | IOException e) {
+                        } catch (InterruptedException e) {
                             throw new RuntimeException(e);
                         }
-                    } else {
-                        //logger.info("Pass the point" + " " + nextPoint.getP_longitude() + " " + nextPoint.getP_latitude() + "  Времени потрачено: " + timeToNextPoint / 1000);
                     }
+                    try {
+                        sessionData = informationAboutSession();
+                        if(sessionData[1].equals("ON_QUEUE")){
+
+                        }
+                        if(sessionData[1].equals("WAIT_TO_START")){
+
+                        }
+                        if(sessionData[1].equals("ON_ROUTE")){
+
+                        }
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+
+                }
+                else{
+                    logger.info("Некоректный статус");
+                    break;
                 }
             }
             //вот это смена маршрута, смена ид сессии и проверка времени чтобы отправится обратно
             directionRoute = !directionRoute;
             String dateString = "";
             try {
-                data = informationAboutSession();
-                sessionId = data[0];
+                sessionData = informationAboutSession();
+                sessionId = sessionData[0];
                 currentSessionId = sessionId;
-                currentSessionStatus = data[1];
-                dateString = data[2];
+                currentSessionStatus = sessionData[1];
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-            DateFormat dateFormat = new SimpleDateFormat("YYYY.dd.MM HH:mm");
-            Date date = null;
-            try {
-                date = dateFormat.parse(dateString);
-            } catch (ParseException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+            if (sessionData[1].equals("ON_ROUTE")){
+                logger.debug("Уже на маршруте");
             }
-            long serverTime = (long)date.getTime();
-            while(serverTime > System.currentTimeMillis()){
+            if (sessionData[1].equals("ON_QUEUE")){
+                //seconds_left - это время до начала поездки у маршрута, нужно просто ее взять и ожидать это время
                 try {
-                    Thread.currentThread().sleep(serverTime - System.currentTimeMillis());
+                    Thread.sleep(Integer.parseInt(sessionData[2])*1000L - 2000);
                 } catch (InterruptedException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
+                    logger.error(e.getMessage());
                 }
             }
-            try {
-                StartSessionA();
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+            if (sessionData[1].equals("WAIT_TO_START")){
+                //Ждем время для начала отправки машины
+                try {
+                    Thread.sleep(Integer.parseInt(sessionData[2])*1000L - 2000);
+                } catch (InterruptedException e) {
+                    logger.error(e.getMessage());
+                }
             }
+            StartSessionA();
         }
 
     }
 
-    private void authorizationDriver() throws IOException{
+    private void authorizationDriver(){
         //Authorization driver
         //дописать порядок авторизации и вынести в отдельную функцию
-        response = request.AuthorizationRequest(phone_number, pin_code);
-        authorizationToken = response.getAsJsonObject("result").getAsJsonPrimitive("token").getAsString();
-        Scanner scanner = new Scanner(authorizationToken);
-        scanner.useDelimiter("\\|");
-        scanner.next();
-        authorizationToken = scanner.next();
-        logger.info(authorizationToken);
-        //request.StartSessionTypeARequest(authorizationToken, "123", "421", "321", "10");
-    }
-    private void ListDriversCars() throws IOException {
-        //List of driver's cars
-        response = request.ListOfDriversCarsRequest(authorizationToken);
-        JsonArray jArray = response.getAsJsonArray("result");
-        carId = jArray.get(0).getAsJsonObject().get("id").toString();
-    }
-    private void ListRoutes() throws IOException {
-        response = request.ListOfRoutesForTheSelectedCarRequest(authorizationToken, carId);
-        JsonArray jArray = response.getAsJsonArray("result");
-        routeId = jArray.get(0).getAsJsonObject().get("id").toString();
-        terminusId = jArray.get(0).getAsJsonObject().get("terminus").getAsJsonArray().get(0).getAsJsonObject().get("id").toString();
-    }
-    private String[] ListOfSessions() throws IOException {
-        String s[] = new String[2];
-        response = request.ListOfSessionTimesToGetStartedRequest(authorizationToken, carId, routeId, terminusId);
-        JsonObject jo = response.getAsJsonObject("result");
-        s[0] = jo.getAsJsonObject().get("times").getAsJsonArray().get(0).getAsJsonObject().get("time").getAsString();
-        s[1] = jo.getAsJsonObject().get("times").getAsJsonArray().get(0).getAsJsonObject().get("date").getAsString();
-        return s;
-    }
-    private String[] StartSessionA() throws IOException {
-        response = request.StartSessionTypeARequest(authorizationToken, carId, routeId, terminusId, startTime);
-        String s[] = new String[3];
-        s[0] = response.getAsJsonObject("result").getAsJsonPrimitive("id").getAsString();
-        s[1] = response.getAsJsonObject("result").getAsJsonPrimitive("status").getAsString();
-        s[2] = response.getAsJsonObject("result").get("start_at").getAsString();
-        return s;
-    }
-
-    private void sendLocation(Point currentPoint) throws IOException {
-        request.SendingLocationRequest(authorizationToken, currentPoint.getP_latitude().toString(), currentPoint.getP_longitude().toString());
-    }
-    private String[] informationAboutSession() throws IOException {
         try {
-            response = request.InformationAboutTheCurrentSessionRequest(authorizationToken);
-            String s[] = new String[3];
+            response = request.AuthorizationRequest(phone_number, pin_code);
+            authorizationToken = response.getAsJsonObject("result").getAsJsonPrimitive("token").getAsString();
+            Scanner scanner = new Scanner(authorizationToken);
+            scanner.useDelimiter("\\|");
+            scanner.next();
+            authorizationToken = scanner.next();
+            logger.debug("Токен авторизации: " + authorizationToken);
+        }
+        catch (NullPointerException nullE){
+            logger.error("Не удалость получить данные с сервера: " + nullE.getMessage());
+        } catch (IOException e) {
+            logger.error(e.getMessage());
+        }
+    }
+    private void  ListDriversCars(){
+        try {
+            //List of driver's cars
+            response = request.ListOfDriversCarsRequest(authorizationToken);
+            JsonArray jArray = response.getAsJsonArray("result");
+            carId = jArray.get(0).getAsJsonObject().get("id").toString();
+        }
+        catch (NullPointerException nullE){
+            logger.error("Не удалость получить данные с сервера: " + nullE.getMessage());
+        } catch (IOException e) {
+            logger.error(e.getMessage());
+        }
+    }
+    private void ListRoutes(){
+        try {
+            response = request.ListOfRoutesForTheSelectedCarRequest(authorizationToken, carId);
+            JsonArray jArray = response.getAsJsonArray("result");
+            routeId = jArray.get(84).getAsJsonObject().get("id").toString();
+            terminusId = jArray.get(84).getAsJsonObject().get("terminus").getAsJsonArray().get(0).getAsJsonObject().get("id").toString();
+        }
+        catch (NullPointerException nullE){
+                logger.error("Не удалость получить данные с сервера: " + nullE.getMessage());
+            }
+        catch (IOException e) {
+                logger.error(e.getMessage());
+            }
+    }
+    private String[] ListOfSessions(){
+        String[] s = new String[2];
+        try {
+            response = request.ListOfSessionTimesToGetStartedRequest(authorizationToken, carId, routeId, terminusId);
+            JsonObject jo = response.getAsJsonObject("result");
+            s[0] = jo.getAsJsonObject().get("times").getAsJsonArray().get(0).getAsJsonObject().get("time").getAsString();
+            s[1] = jo.getAsJsonObject().get("times").getAsJsonArray().get(0).getAsJsonObject().get("date").getAsString();
+        }
+        catch (NullPointerException nullE){
+            logger.error("Не удалость получить данные с сервера: " + nullE.getMessage());
+        }
+        catch (IOException e) {
+            logger.error(e.getMessage());
+        }
+        return s;
+    }
+    private String[] StartSessionA() {
+        String[] s = new String[3];
+        try {
+            response = request.StartSessionTypeARequest(authorizationToken, carId, routeId, terminusId, startTime);
             s[0] = response.getAsJsonObject("result").getAsJsonPrimitive("id").getAsString();
             s[1] = response.getAsJsonObject("result").getAsJsonPrimitive("status").getAsString();
             s[2] = response.getAsJsonObject("result").get("start_at").getAsString();
+        }
+        catch (NullPointerException nullE){
+            logger.error("Не удалость получить данные с сервера: " + nullE.getMessage());
+        }
+        catch (IOException e) {
+            logger.error(e.getMessage());
+        }
+        return s;
+    }
+    private String[] ContiniumSessionA() {
+        String[] s = new String[3];
+        try {
+            response = request.ContiniumSessionTypeARequest(authorizationToken,carId,routeId,terminusId);
+            s[0] = response.getAsJsonObject("result").getAsJsonPrimitive("id").getAsString();
+            s[1] = response.getAsJsonObject("result").getAsJsonPrimitive("status").getAsString();
+            s[2] = response.getAsJsonObject("result").get("start_at").getAsString();
+        }catch (NullPointerException nullE){
+            logger.error("Не удалость получить данные с сервера: " + nullE.getMessage());
+        } catch (IOException e) {
+            logger.error(e.getMessage());
+        }
+        return s;
+    }
+    private void sendLocation(Point currentPoint){
+        try {
+            request.SendingLocationRequest(authorizationToken, currentPoint.getP_latitude().toString(), currentPoint.getP_longitude().toString());
+        }
+        catch (IOException e){
+            logger.error(e.getMessage());
+        }
+    }
+    private String[] informationAboutSession() throws IOException {
+        String[] s = new String[3];
+        try {
+            response = request.InformationAboutTheCurrentSessionRequest(authorizationToken);
+            s[0] = response.getAsJsonObject("result").getAsJsonPrimitive("id").getAsString();
+            s[1] = response.getAsJsonObject("result").getAsJsonPrimitive("status").getAsString();
+            s[2] = response.getAsJsonObject("result").get("seconds_left").getAsString();
             return s;
         }
         catch (ClassCastException e) {
-            String s[] = {"0","error","0"};
+            s = new String[]{"0", "error", "0"};
+            return s;
+        }
+        catch (NullPointerException nullE){
+            logger.error("Не удалость получить данные с сервера: " + nullE.getMessage());
+            s = new String[]{"0", "error", "0"};
+            return s;
+        }
+        catch (IOException e) {
+            logger.error(e.getMessage());
+            s = new String[]{"0", "error", "0"};
             return s;
         }
     }
-    private void stopSession() throws IOException{
-        request.StopSessionRequest(authorizationToken, "Stopping");
-
+    private void stopSession(){
+        try {
+            request.StopSessionRequest(authorizationToken, "Stopping");
+        }
+        catch (IOException e){
+            logger.error(e.getMessage());
+        }
     }
 }

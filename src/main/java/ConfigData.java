@@ -1,25 +1,37 @@
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Scanner;
 
 public class ConfigData {
-    static Logger logger = Main.getLogger();
+    private static final Logger logger = LoggerFactory.getLogger(ConfigData.class);
     private static ArrayList<SettingRoute> settingRoutesData = new ArrayList<SettingRoute>(); //Список с настройками маршрутов
 
-    public static void readConfigFile(String pathname) throws IOException { //Чтение файла с маршрутами
-        Scanner scanner = new Scanner(new File(pathname));
+    @SuppressWarnings("ReassignedVariable")
+    public static void readConfigFile(String pathname) { //Чтение файла с маршрутами
+        Scanner scanner = null;
+        try {
+            scanner = new Scanner(new File(pathname));
+            logger.debug("Файл найден");
+        } catch (FileNotFoundException e) {
+            logger.error(e.toString() + "\n Файл не найден");
+            throw new RuntimeException(e);
+        }
         scanner.nextLine();
         scanner.useDelimiter(System.getProperty("line.separator"));
         while (scanner.hasNext()) {
             //парсим строку в объект Employee
             SettingRoute setting = parseCSVLine(scanner.next());
             settingRoutesData.add(setting);
-            logger.info(setting.toString());
+            logger.debug(setting.toString());
+            logger.debug("Настройки успешно прочитаны");
         }
-        logger.info(Integer.toString(settingRoutesData.size()));
+        logger.debug(Integer.toString(settingRoutesData.size()));
         scanner.close();
     }
 
