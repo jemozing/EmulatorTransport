@@ -105,8 +105,8 @@ public abstract class Transport {
         this.latitude = latitude;
     }
     public void setCurrentCoordinates(Point currentPoint){
-        this.longitude = currentPoint.getP_longitude();
-        this.latitude = currentPoint.getP_latitude();
+        this.longitude = currentPoint.getLon();
+        this.latitude = currentPoint.getLat();
     }
     public void setTransport_speed(double transport_speed) {
         this.transport_speed = transport_speed;

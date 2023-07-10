@@ -1,29 +1,34 @@
 import java.math.BigDecimal;
 
 public class Point {
-    private BigDecimal p_longitude, p_latitude; //координаты точки
+    private BigDecimal lon, lat; //координаты точки
     private String name;
 
-    public Point(BigDecimal p_longitude, BigDecimal p_latitude, String name) {
-        this.p_longitude = p_longitude;
-        this.p_latitude = p_latitude;
+    public Point(BigDecimal lon, BigDecimal lat, String name) {
+        this.lon = lon;
+        this.lat = lat;
         this.name = name;
     }
-
-    public BigDecimal getP_longitude() {
-        return p_longitude;
+    public Point(double lon, double lat) {
+        this.lon = new BigDecimal(lon);
+        this.lat = new BigDecimal(lat);
+        this.name = "";
     }
 
-    public void setP_longitude(BigDecimal p_longitude) {
-        this.p_longitude = p_longitude;
+    public BigDecimal getLon() {
+        return lon;
     }
 
-    public BigDecimal getP_latitude() {
-        return p_latitude;
+    public void setLon(BigDecimal lon) {
+        this.lon = lon;
     }
 
-    public void setP_latitude(BigDecimal p_latitude) {
-        this.p_latitude = p_latitude;
+    public BigDecimal getLat() {
+        return lat;
+    }
+
+    public void setLat(BigDecimal lat) {
+        this.lat = lat;
     }
 
     public String getName() {

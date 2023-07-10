@@ -1,12 +1,10 @@
+import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.IOException;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Scanner;
 
@@ -72,6 +70,7 @@ public class Driver implements Runnable{
                 logger.debug("Остановка начатой сессии");
             }
             ContiniumSessionA();
+            infAboutTheCurSessionRoute(authorizationToken, route);
             sessionData = informationAboutSession();
             if (sessionData[1].equals("ON_ROUTE")){
                 logger.debug("Уже на маршруте");
@@ -106,10 +105,10 @@ public class Driver implements Runnable{
         }
         //создание транспорта для водителя с указанным параметрами и добавление функций
         transport_route = new Transport(
-                route.getRoute_forward().get(0).getP_longitude(),
-                route.getRoute_forward().get(0).getP_latitude(),
-                route.getRoute_forward().get(route.getRoute_forward().size() - 1).getP_latitude(),
-                route.getRoute_forward().get(route.getRoute_forward().size() - 1).getP_longitude(),
+                route.getRoute_forward().get(0).getLon(),
+                route.getRoute_forward().get(0).getLat(),
+                route.getRoute_forward().get(route.getRoute_forward().size() - 1).getLat(),
+                route.getRoute_forward().get(route.getRoute_forward().size() - 1).getLon(),
                 route.getName(),
                 route.getNumber(),
                 UpdateFrequency,
@@ -147,22 +146,27 @@ public class Driver implements Runnable{
             //текущая точка, следующая точка, промежуточная точка
             Point currentPoint = routeIterator.next(), nextPoint = null, intermediatePoint = null;
             logger.info("Начинаю поездку с конечной точки");
-            logger.info("Текущая точка: " + currentPoint.getName() + " " + currentPoint.getP_longitude() + " " + currentPoint.getP_latitude());
+            logger.info("Текущая точка: " + currentPoint.getName() + " " + currentPoint.getLon() + " " + currentPoint.getLat());
             long startTimeTimer = System.currentTimeMillis();//начальное время
             long elapsedTime = 0; //прошедшее время
             long timeAdd = 0;
+            try {
+                currentSessionStatus = informationAboutSession()[1];
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
             //Цикл хождения по маршруту
             while (routeIterator.hasNext()) {
-                if (currentSessionStatus.equals("WAIT_TO_START") || currentSessionStatus.equals("ON_ROUTE") || currentSessionStatus.equals("ON_QUEUE")) {
+                if (currentSessionStatus.equals("ON_ROUTE")) {
                     if (intermediatePoint == null) {
                         nextPoint = routeIterator.next();
                     }
                     //Расчет времени до следующей точки
                     long timeToNextPoint = Math.round(Calculations.timeDistance(
-                            currentPoint.getP_latitude().doubleValue(),
-                            currentPoint.getP_longitude().doubleValue(),
-                            nextPoint.getP_latitude().doubleValue(),
-                            nextPoint.getP_longitude().doubleValue(),
+                            currentPoint.getLat().doubleValue(),
+                            currentPoint.getLon().doubleValue(),
+                            nextPoint.getLat().doubleValue(),
+                            nextPoint.getLon().doubleValue(),
                             transport_route.getTransport_speed()));
 
                     if (elapsedTime + timeToNextPoint > transport_route.getUpdate_time() * 1000L) {
@@ -170,11 +174,11 @@ public class Driver implements Runnable{
                         timeAdd = transport_route.getUpdate_time() * 1000L - elapsedTime;
                         //Расчет координаты точки через некоторое время
                         intermediatePoint = Calculations.givePointFromDistance(
-                                currentPoint.getP_latitude().doubleValue(),
-                                currentPoint.getP_longitude().doubleValue(),
+                                currentPoint.getLat().doubleValue(),
+                                currentPoint.getLon().doubleValue(),
                                 (timeToNextPoint / 1000) * (speed / 3.6),
-                                nextPoint.getP_latitude().doubleValue(),
-                                nextPoint.getP_longitude().doubleValue());
+                                nextPoint.getLat().doubleValue(),
+                                nextPoint.getLon().doubleValue());
                         transport_route.setCurrentCoordinates(intermediatePoint);
                         currentPoint = intermediatePoint;
                         elapsedTime = 0;
@@ -199,7 +203,7 @@ public class Driver implements Runnable{
                         }
                         if (elapsedTime == 0) {
                             sendLocation(transport_route.getCurrentCoordinates());
-                            logger.info("Текущая геопозиция: " + transport_route.getCurrentCoordinates().getP_longitude() + " " + transport_route.getCurrentCoordinates().getP_latitude());
+                            logger.info("Текущая геопозиция: " + transport_route.getCurrentCoordinates().getLon() + " " + transport_route.getCurrentCoordinates().getLat());
                             startTimeTimer = System.currentTimeMillis();
                         }
                     } catch (InterruptedException e) {
@@ -207,7 +211,7 @@ public class Driver implements Runnable{
                         throw new RuntimeException(e);
                     }
                     if (currentPoint.hasName()) {
-                        logger.info("Текущая остановка: " + currentPoint.getName() + " " + currentPoint.getP_longitude() + " " + currentPoint.getP_latitude());
+                        logger.info("Текущая остановка: " + currentPoint.getName() + " " + currentPoint.getLon() + " " + currentPoint.getLat());
                         logger.info("Стою 15 секунд");
                         try {
                             Thread.sleep(15L * 1000L);
@@ -309,7 +313,10 @@ public class Driver implements Runnable{
             response = request.ListOfRoutesForTheSelectedCarRequest(authorizationToken, carId);
             JsonArray jArray = response.getAsJsonArray("result");
             routeId = jArray.get(84).getAsJsonObject().get("id").toString();
-            terminusId = jArray.get(84).getAsJsonObject().get("terminus").getAsJsonArray().get(0).getAsJsonObject().get("id").toString();
+            if(directionRoute)
+                terminusId = jArray.get(84).getAsJsonObject().get("terminus").getAsJsonArray().get(0).getAsJsonObject().get("id").toString();
+            else
+                terminusId = jArray.get(84).getAsJsonObject().get("terminus").getAsJsonArray().get(1).getAsJsonObject().get("id").toString();
         }
         catch (NullPointerException nullE){
                 logger.error("Не удалость получить данные с сервера: " + nullE.getMessage());
@@ -366,7 +373,7 @@ public class Driver implements Runnable{
     }
     private void sendLocation(Point currentPoint){
         try {
-            request.SendingLocationRequest(authorizationToken, currentPoint.getP_latitude().toString(), currentPoint.getP_longitude().toString());
+            request.SendingLocationRequest(authorizationToken, currentPoint.getLat().toString(), currentPoint.getLon().toString());
         }
         catch (IOException e){
             logger.error(e.getMessage());
@@ -403,5 +410,29 @@ public class Driver implements Runnable{
         catch (IOException e){
             logger.error(e.getMessage());
         }
+    }
+    private void infAboutTheCurSessionRoute(String AuthorizationKey, RouteBase route){
+
+        try {
+            Gson gson = new Gson();
+            response = request.InformationAboutTheRouteOfTheCurrentSessionRequest(AuthorizationKey);
+            ArrayList<Point> forward = new ArrayList<Point>();
+            ArrayList<Point> backward = new ArrayList<Point>();
+            JsonArray forw = response.getAsJsonObject("result").getAsJsonObject("path_by_dir").getAsJsonArray("forward");
+            JsonArray back = response.getAsJsonObject("result").getAsJsonObject("path_by_dir").getAsJsonArray("backward");
+
+
+            for(int i = 0; i < forw.size(); i++){
+                forward.add(new Point(forw.get(i).getAsJsonObject().getAsJsonPrimitive("lon").getAsDouble(),forw.get(i).getAsJsonObject().getAsJsonPrimitive("lat").getAsDouble()));
+            }
+            for(int i = 0; i < back.size(); i++){
+                backward.add(new Point(back.get(i).getAsJsonObject().getAsJsonPrimitive("lon").getAsDouble(),back.get(i).getAsJsonObject().getAsJsonPrimitive("lat").getAsDouble()));
+            }
+            route.setRoute_forward(forward);
+            route.setRoute_backward(backward);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
     }
 }

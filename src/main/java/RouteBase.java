@@ -18,6 +18,14 @@ public class RouteBase {
         route_backward.add(point);
     }
 
+    public void setRoute_forward(List<Point> route_forward) {
+        this.route_forward = route_forward;
+    }
+
+    public void setRoute_backward(List<Point> route_backward) {
+        this.route_backward = route_backward;
+    }
+
     public List<Point> getRoute_backward() {
         return route_backward;
     }
