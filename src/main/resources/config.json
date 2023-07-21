@@ -1,0 +1,44 @@
+{
+  "config": [
+    {
+      "route_id": 1,
+      "route": "1",
+      "numberOfCars": 6,
+      "movementInterval": 15,
+      "updateFrequency": 15,
+      "speed": 60
+    },
+    {
+      "route_id": 1,
+      "route": "1",
+      "numberOfCars": 6,
+      "movementInterval": 15,
+      "updateFrequency": 15,
+      "speed": 60
+    },
+    {
+      "route_id": 1,
+      "route": "1",
+      "numberOfCars": 6,
+      "movementInterval": 15,
+      "updateFrequency": 15,
+      "speed": 60
+    },
+    {
+      "route_id": 1,
+      "route": "1",
+      "numberOfCars": 6,
+      "movementInterval": 15,
+      "updateFrequency": 15,
+      "speed": 60
+    },
+    {
+      "route_id": 1,
+      "route": "1",
+      "numberOfCars": 6,
+      "movementInterval": 15,
+      "updateFrequency": 15,
+      "speed": 60
+    }
+  ]
+}
