@@ -1,7 +1,7 @@
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import lombok.extern.slf4j.Slf4j;
-import Requests.model.Account;
+import model.Account;
 
 import java.io.*;
 import java.net.*;
@@ -19,7 +19,7 @@ public class HttpRequestOld {
 
         HttpURLConnection con = null;
         var url = "https://devsrv.ru/api/v1/driver/auth/login";
-        var urlParameters = "{\"phone\":\""+ account.getLogin() +"\",\"pin_code\":\""+ account.getPassword()  +"\"}";
+        var urlParameters = "{\"phone\":\""+ account.getPhone() +"\",\"pin_code\":\""+ account.getPin_code()  +"\"}";
         byte[] postData = urlParameters.getBytes(UTF_8);
         log.debug(url + "  " + urlParameters);
         try {

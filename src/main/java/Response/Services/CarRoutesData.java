@@ -15,12 +15,12 @@ import java.util.Iterator;
 public class CarRoutesData {
 
     public ArrayList<CarRoutes> parseJsonData(JsonObject jsonObject){
-        ArrayList<CarRoutes> settings = new ArrayList<>();
+        ArrayList<CarRoutes> carRoutes = new ArrayList<>();
         Gson gson = new Gson();
         for (int i = 0; i < jsonObject.getAsJsonArray("result").size(); i++){
-            settings.add(gson.fromJson(jsonObject.getAsJsonArray("result").get(i), CarRoutes.class));
+            carRoutes.add(gson.fromJson(jsonObject.getAsJsonArray("result").get(i), CarRoutes.class));
         }
-        return settings;
+        return carRoutes;
     }
     public String searchJsonData(ArrayList<CarRoutes> carRoutesArrayList, String route_number){
         Iterator<CarRoutes> iterator = carRoutesArrayList.iterator();

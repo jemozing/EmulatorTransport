@@ -10,7 +10,10 @@ import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.*;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.UnknownHostException;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -18,7 +21,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 public abstract class Requests {
     protected JsonObject response;
     protected HttpURLConnection con;
-    private String url = "https://devsrv.ru/api/v1/driver/";
+    private String url;
 
     @Getter
     @Setter
@@ -37,20 +40,21 @@ public abstract class Requests {
 
     private int status;
 
-    public void setUrl(String url){
-        this.url = this.url + url;
+    protected void setUrl(String url) {
+        this.url = url;
     }
-    protected JsonObject POST_request(){
+
+    protected JsonObject POST_request() {
         //String url = "https://devsrv.ru/api/v1/driver/auth/login";
         //bodyParameters = "{\"phone\":\""+ phone +"\",\"pin_code\":\""+ pin_code  +"\"}";
         byte[] postData = bodyParameters.getBytes(UTF_8);
-        log.debug(url + "  " + bodyParameters);
+        //log.debug(url + "  " + bodyParameters);
         try {
             URL myurl = new URL(url);
             con = (HttpURLConnection) myurl.openConnection();
             con.setDoOutput(true);
             con.setRequestMethod("POST");
-            if(useAuthKey) con.setRequestProperty("Authorization", "Bearer " + AuthorizationKey);
+            if (useAuthKey) con.setRequestProperty("Authorization", "Bearer " + AuthorizationKey);
             con.setRequestProperty("Content-Type", "application/json");
             con.setRequestProperty("Accept", "application/json");
 
@@ -60,7 +64,7 @@ public abstract class Requests {
 
             StringBuilder content = null;
             status = con.getResponseCode();
-            log.debug("Статус сервера: " + status);
+            //log.debug("Статус сервера: " + status);
             if (status == HttpURLConnection.HTTP_CREATED || status == HttpURLConnection.HTTP_OK) {
                 try (var br = new BufferedReader(
                         new InputStreamReader(con.getInputStream()))) {
@@ -73,7 +77,7 @@ public abstract class Requests {
                         content.append(System.lineSeparator());
                     }
                 }
-                log.debug("Запрос прошел удачно");
+                log.debug(url + "  " + bodyParameters + "Запрос прошел удачно, статус сервера: " + status);
             } else {
                 // Ошибка сервера, получаем ошибочный поток ответа
                 try (var errorStream = con.getErrorStream()) {
@@ -88,13 +92,14 @@ public abstract class Requests {
                         }
                     }
                 }
-                log.error(content.toString());
+                JsonObject errResponse = (JsonObject) JsonParser.parseString(content.toString());
+                log.error(errResponse.toString());
                 throw new MalformedURLException();
             }
             response = (JsonObject) JsonParser.parseString(content.toString());
-            log.debug(response.toString());
+            log.debug("Ответ сервера: " + response.toString());
 
-        } catch (UnknownHostException | MalformedURLException hostE){
+        } catch (UnknownHostException | MalformedURLException hostE) {
             log.error("Не удалость подключится к серверу: " + hostE.getMessage());
         } catch (IOException e) {
             log.error(e.getMessage());
@@ -105,30 +110,31 @@ public abstract class Requests {
         }
         return response;
     }
-    protected JsonObject GET_request(){
+
+    protected JsonObject GET_request() {
 
         //var bodyParameters = "{\"route_id\":\"" + route_id + "\"}";
-        log.debug(url);
+        //log.debug(url);
         try {
             var myurl = new URL(url);
             con = (HttpURLConnection) myurl.openConnection();
             con.setRequestMethod("GET");
-            if(useAuthKey) con.setRequestProperty("Authorization", "Bearer " + AuthorizationKey);
+            if (useAuthKey) con.setRequestProperty("Authorization", "Bearer " + AuthorizationKey);
             con.setRequestProperty("Content-Type", "application/json");
             con.setRequestProperty("Accept", "application/json");
             StringBuilder content = null;
 
-            if(useBodyParams) {
+            if (useBodyParams) {
                 byte[] postData = bodyParameters.getBytes(UTF_8);
                 try (var wr = new DataOutputStream(con.getOutputStream())) {
 
                     wr.write(postData);
-                }catch (IOException e) {
+                } catch (IOException e) {
                     log.error(e.getMessage());
                 }
             }
             status = con.getResponseCode();
-            log.debug("Статус сервера: " + status);
+            //log.debug("Статус сервера: " + status);
             if (status == HttpURLConnection.HTTP_CREATED || status == HttpURLConnection.HTTP_OK) {
                 try (BufferedReader in = new BufferedReader(
                         new InputStreamReader(con.getInputStream()))) {
@@ -142,7 +148,7 @@ public abstract class Requests {
                         content.append(System.lineSeparator());
                     }
                 }
-                log.debug("Запрос прошел удачно");
+                log.debug(url + " Запрос прошел удачно, статус сервера: "+ status);
             } else {
                 // Ошибка сервера, получаем ошибочный поток ответа
                 try (var errorStream = con.getErrorStream()) {
@@ -157,12 +163,13 @@ public abstract class Requests {
                         }
                     }
                 }
-                log.error(content.toString());
+                JsonObject errResponse = (JsonObject) JsonParser.parseString(content.toString());
+                log.error(errResponse.toString());
                 throw new MalformedURLException();
             }
             response = (JsonObject) JsonParser.parseString(content.toString());
-            log.debug(response.toString());
-        }catch (UnknownHostException | MalformedURLException hostE){
+            log.debug("Ответ сервера: " + response.toString());
+        } catch (UnknownHostException | MalformedURLException hostE) {
             log.error("Не удалость подключится к серверу: " + hostE.getMessage());
         } catch (IOException e) {
             log.error(e.getMessage());

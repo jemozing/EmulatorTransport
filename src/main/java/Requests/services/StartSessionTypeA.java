@@ -6,7 +6,7 @@ import com.google.gson.JsonObject;
 
 public class StartSessionTypeA extends Requests {
     public JsonObject request(String authKey, String car_id, String route_id, String terminus_id, String time){
-        setUrl(Constants.StartSessionTypeA);
+        setUrl(Constants.URL + Constants.StartSessionTypeA);
         setUseAuthKey(true);
         setUseBodyParams(true);
         setAuthorizationKey(authKey);

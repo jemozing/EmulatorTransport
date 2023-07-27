@@ -3,7 +3,7 @@ import Service.AccountCSVReader;
 import Service.Config;
 import Service.DataBaseRequests;
 import lombok.extern.slf4j.Slf4j;
-import Requests.model.Account;
+import model.Account;
 import model.SettingRoute;
 import org.apache.log4j.PropertyConfigurator;
 
@@ -27,10 +27,10 @@ public class Main {
         // Генерируем имя файла лога с текущим временем и числом
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss_S");
         String logFileName = "Logs/log_" + dateFormat.format(new Date()) + ".log";
-        // Устанавливаем путь к файлу лога в системное свойство
-        System.setProperty("logFilename", logFileName);
         // Загружаем конфигурацию Log4j
         PropertyConfigurator.configure("src/main/resources/log4j.properties");
+        // Устанавливаем путь к файлу лога в системное свойство
+        System.setProperty("logFilename", logFileName);
 
         log.info("Эмулятор транспорта версия 1");
         log.info("Во избежании проблем советую приготовить огнетушитель");
@@ -42,24 +42,36 @@ public class Main {
         Config.readConfig("src/main/resources/config.json");
         Iterator iter = Config.getSettingRoutesData().iterator();
         ArrayList<Account> accounts = AccountCSVReader.CSVRead();
-        ServerResponse serverResponse = new ServerResponse();
-        serverResponse.authorization(accounts.get(0));
 
-        while (iter.hasNext()){
+        /*while (iter.hasNext()){
             SettingRoute setting = (SettingRoute) iter.next();
             dataBaseRequests.addData(setting.getRoute_id(), dataBaseRequests.readDataBase("src/main/java/RouteFiles/" + setting.getRoute_id()  + ".csv"));
-        }
+        }*/
         //Основные потоки с водителями
-        ExecutorService pool = Executors.newCachedThreadPool();
-        /*for (int j = 0; j < Service.Config.getSettingRoutesData().size(); j++){
+        ArrayList<ExecutorService> pools = new ArrayList<>();
+        for (int j = 0; j < Service.Config.getSettingRoutesData().size(); j++){
+            pools.add(Executors.newCachedThreadPool());
             for (int i = 0; i < Service.Config.getSettingRoutesData().get(j).getNumberOfCars(); i++) {
-                pool.execute(new DriverOld(
+                pools.get(j).execute(new Driver(
                         Service.Config.getSettingRoutesData().get(j),
-                        accounts.get(i),
-                        i % 2 == 0));
+                        Service.Config.getSettingRoutesData().get(j).getAccounts().get(i),
+                        i % 2 == 0, i));
+            }
+        }
+        for (int j = 1; j < Service.Config.getSettingRoutesData().size(); j++){
+            pools.get(j).shutdown();
+        }
+        /*ExecutorService pool = Executors.newCachedThreadPool();
+        int a = 0;
+        for (int j = 0; j < Service.Config.getSettingRoutesData().size(); j++){
+            for (int i = 0; i < Service.Config.getSettingRoutesData().get(j).getNumberOfCars(); i++) {
+                pool.execute(new Driver(
+                        Service.Config.getSettingRoutesData().get(j),
+                        Service.Config.getSettingRoutesData().get(j).getAccounts().get(i),
+                        i % 2 == 0, i));
             }
         }*/
-        for(int i = 0; i < Config.getSettingRoutesData().get(0).getNumberOfCars(); i++){
+        /*for(int i = 0; i < Config.getSettingRoutesData().get(0).getNumberOfCars(); i++){
             pool.execute(new DriverOld(
                     dataBaseRequests.getData("04210"),
                     Config.getSettingRoutesData().get(0).getMovementInterval()*i,
@@ -69,6 +81,7 @@ public class Main {
                     accounts.get(i).getPassword(),
                     request,
                     i%2==0));
-        }
+        }*/
+
     }
 }

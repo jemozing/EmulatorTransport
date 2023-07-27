@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import lombok.extern.slf4j.Slf4j;
+import model.Account;
 import model.SettingRoute;
 
 import java.io.File;
@@ -41,16 +42,16 @@ public class Config {
     }
 
     private static SettingRoute parseCSVLine(String line) {
-        String route_id;
-        int route;
+        int route_id;
+        String route;
         int numberOfCars;
         int movementInterval;
         int updateFrequency;
         double speed;
         Scanner scanner = new Scanner(line);
         scanner.useDelimiter("\\s*,\\s*");
-        route_id = scanner.next();
-        route = scanner.nextInt();
+        route_id = scanner.nextInt();
+        route = scanner.next();
         numberOfCars = scanner.nextInt();
         movementInterval = scanner.nextInt();
         updateFrequency = scanner.nextInt();

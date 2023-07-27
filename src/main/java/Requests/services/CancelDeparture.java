@@ -6,7 +6,7 @@ import com.google.gson.JsonObject;
 
 public class CancelDeparture extends Requests {
     public JsonObject request(String authKey){
-        setUrl(Constants.CancelDeparture);
+        setUrl(Constants.URL + Constants.CancelDeparture);
         setUseAuthKey(true);
         setUseBodyParams(true);
         setAuthorizationKey(authKey);

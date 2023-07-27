@@ -1,6 +1,6 @@
 package Service;
 
-import Requests.model.Account;
+import model.Account;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,7 +41,7 @@ public class AccountCSVReader {
 
         // Выводим информацию о всех учетных записях
         for (Account account : accounts) {
-            logger.debug("Логин: " + account.getLogin() + ", Пароль: " + account.getPassword());
+            logger.debug("Логин: " + account.getPhone() + ", Пароль: " + account.getPin_code());
         }
         return accounts;
     }

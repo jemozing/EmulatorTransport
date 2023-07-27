@@ -2,43 +2,98 @@
   "config": [
     {
       "route_id": 1,
-      "route": "1",
-      "numberOfCars": 6,
-      "movementInterval": 15,
+      "route": "421",
+      "numberOfCars": 13,
+      "movementInterval": 30,
       "updateFrequency": 15,
-      "speed": 60
-    },
-    {
+      "speed": 60,
+      "accounts" : [
+        {
+          "phone" : "7 421 000-05-33",
+          "pin_code": 1234
+        },
+        {
+          "phone" : "7 421 000-05-85",
+          "pin_code": 1234
+        },
+        {
+          "phone" : "7 421 000-05-99",
+          "pin_code": 1234
+        },
+        {
+          "phone" : "7 421 000-06-92",
+          "pin_code": 1234
+        },
+        {
+          "phone" : "7 421 000-07-97",
+          "pin_code": 1234
+        },
+        {
+          "phone" : "7 421 000-00-41",
+          "pin_code": 1234
+        },
+        {
+          "phone" : "7 421 000-04-22",
+          "pin_code": 1234
+        },
+        {
+          "phone" : "7 421 000-01-01",
+          "pin_code": 1234
+        },
+        {
+          "phone" : "7 421 000-02-63",
+          "pin_code": 1234
+        },
+        {
+          "phone" : "7 421 000-02-70",
+          "pin_code": 1234
+        },
+        {
+          "phone" : "7 421 000-02-89",
+          "pin_code": 1234
+        },
+        {
+          "phone" : "7 421 000-03-02",
+          "pin_code": 1234
+        },
+        {
+          "phone" : "7 421 000-04-31",
+          "pin_code": 1234
+        }
+      ]
+    },{
       "route_id": 1,
-      "route": "1",
+      "route": "3",
       "numberOfCars": 6,
-      "movementInterval": 15,
+      "movementInterval": 30,
       "updateFrequency": 15,
-      "speed": 60
-    },
-    {
-      "route_id": 1,
-      "route": "1",
-      "numberOfCars": 6,
-      "movementInterval": 15,
-      "updateFrequency": 15,
-      "speed": 60
-    },
-    {
-      "route_id": 1,
-      "route": "1",
-      "numberOfCars": 6,
-      "movementInterval": 15,
-      "updateFrequency": 15,
-      "speed": 60
-    },
-    {
-      "route_id": 1,
-      "route": "1",
-      "numberOfCars": 6,
-      "movementInterval": 15,
-      "updateFrequency": 15,
-      "speed": 60
+      "speed": 60,
+      "accounts" : [
+        {
+          "phone" : "7 000 000-00-01",
+          "pin_code": 1111
+        },
+        {
+          "phone" : "7 000 000-00-02",
+          "pin_code": 1111
+        },
+        {
+          "phone" : "7 000 000-00-03",
+          "pin_code": 1111
+        },
+        {
+          "phone" : "7 000 000-00-04",
+          "pin_code": 1111
+        },
+        {
+          "phone" : "7 000 000-00-05",
+          "pin_code": 1111
+        },
+        {
+          "phone" : "7 000 000-00-06",
+          "pin_code": 1111
+        }
+      ]
     }
   ]
 }

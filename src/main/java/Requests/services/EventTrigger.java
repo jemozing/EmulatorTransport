@@ -6,7 +6,7 @@ import com.google.gson.JsonObject;
 
 public class EventTrigger extends Requests {
     public JsonObject request(String authKey, String messageEvent){
-        setUrl(Constants.EventTrigger);
+        setUrl(Constants.URL + Constants.EventTrigger);
         setUseAuthKey(true);
         setUseBodyParams(true);
         setAuthorizationKey(authKey);

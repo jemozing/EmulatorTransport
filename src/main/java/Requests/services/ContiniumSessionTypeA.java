@@ -6,8 +6,8 @@ import com.google.gson.JsonObject;
 
 public class ContiniumSessionTypeA extends Requests {
 
-    public JsonObject request(String authKey, int car_id, int route_id, int terminus_id) {
-        setUrl(Constants.ContiniumSessionTypeA);
+    public JsonObject request(String authKey, String car_id, String route_id, String terminus_id) {
+        setUrl(Constants.URL + Constants.ContiniumSessionTypeA);
         setUseAuthKey(true);
         setUseBodyParams(true);
         setAuthorizationKey(authKey);

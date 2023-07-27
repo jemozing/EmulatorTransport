@@ -6,7 +6,7 @@ import com.google.gson.JsonObject;
 
 public class ListOfRoutesForTheSelectedCar extends Requests {
     public JsonObject request(String authKey, String car_id){
-        setUrl(Constants.ListOfRoutesForTheSelectedCar + car_id + "/routes");
+        setUrl(Constants.URL + Constants.ListOfRoutesForTheSelectedCar + car_id + "/routes");
         setUseAuthKey(true);
         setUseBodyParams(false);
         setAuthorizationKey(authKey);

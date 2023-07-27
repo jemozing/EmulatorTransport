@@ -26,7 +26,7 @@ public class Calculations {
         double azimuth = azimuth(lat, lon, lat2, lon2);
         double pointLat = Math.asin(Math.sin(toRad(lat))*Math.cos(distance/R)+Math.cos(toRad(lat))*Math.sin(distance/R)*Math.cos(azimuth));
         double pointLon =  Math.atan2(Math.sin(azimuth)*Math.sin(distance/R)*Math.cos(toRad(lat)), Math.cos(distance/R)-Math.sin(toRad(lat))*Math.sin(pointLat));
-        return new Point(new BigDecimal(Math.toDegrees(pointLon)+lon), new BigDecimal(Math.toDegrees(pointLat)),"");
+        return new Point(Math.toDegrees(pointLon)+lon, Math.toDegrees(pointLat));
         /*
           This function calculates coordinates knowing the distance from the initial coordinates,
           the initial coordinates and the azimuth

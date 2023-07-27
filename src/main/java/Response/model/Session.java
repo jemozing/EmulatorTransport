@@ -6,6 +6,6 @@ public class Session extends Response.model.Data {
     private String status;
     private String start_at;
     private int seconds_left;
-
+    boolean state;
     // Геттеры и сеттеры
 }

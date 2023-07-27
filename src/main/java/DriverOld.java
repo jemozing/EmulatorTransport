@@ -1,4 +1,4 @@
-import Requests.model.Account;
+import model.Account;
 import Response.Services.ServerResponse;
 import Service.Calculations;
 import com.google.gson.Gson;
@@ -36,8 +36,8 @@ public class DriverOld implements Runnable{
         this.movementInterval = movementInterval;
         this.UpdateFrequency = UpdateFrequency;
         this.speed = speed;
-        this.account.setLogin(phone_number);
-        this.account.setPassword(pin_code);
+        this.account.setPhone(phone_number);
+        this.account.setPin_code(pin_code);
         this.request = request;
         this.directionRoute = directionRoute;
     }
@@ -111,10 +111,10 @@ public class DriverOld implements Runnable{
         }
         //создание транспорта для водителя с указанным параметрами и добавление функций
         transport_route = new Transport(
-                new Point(route.getRoute_forward().get(0).getLon(),
-                        route.getRoute_forward().get(0).getLat(),""),
-                new Point(route.getRoute_forward().get(route.getRoute_forward().size() - 1).getLat(),
-                        route.getRoute_forward().get(route.getRoute_forward().size() - 1).getLon(), ""),
+                new Point(route.getRoute_forward().get(0).getLonB(),
+                        route.getRoute_forward().get(0).getLatB(),""),
+                new Point(route.getRoute_forward().get(route.getRoute_forward().size() - 1).getLatB(),
+                        route.getRoute_forward().get(route.getRoute_forward().size() - 1).getLonB(), ""),
                 route.getName(),
                 route.getNumber(),
                 UpdateFrequency,
@@ -140,7 +140,7 @@ public class DriverOld implements Runnable{
             //текущая точка, следующая точка, промежуточная точка
             Point currentPoint = routeIterator.next(), nextPoint = null, intermediatePoint = null;
             log.info("Начинаю поездку с конечной точки");
-            log.info("Текущая точка: " + currentPoint.getName() + " " + currentPoint.getLon() + " " + currentPoint.getLat());
+            log.info("Текущая точка: " + currentPoint.getName() + " " + currentPoint.getLonB() + " " + currentPoint.getLatB());
             long startTimeTimer = System.currentTimeMillis();//начальное время
             long elapsedTime = 0; //прошедшее время
             long timeAdd = 0;
@@ -157,10 +157,10 @@ public class DriverOld implements Runnable{
                     }
                     //Расчет времени до следующей точки
                     long timeToNextPoint = Math.round(Calculations.timeDistance(
-                            currentPoint.getLat().doubleValue(),
-                            currentPoint.getLon().doubleValue(),
-                            nextPoint.getLat().doubleValue(),
-                            nextPoint.getLon().doubleValue(),
+                            currentPoint.getLatB().doubleValue(),
+                            currentPoint.getLonB().doubleValue(),
+                            nextPoint.getLatB().doubleValue(),
+                            nextPoint.getLonB().doubleValue(),
                             transport_route.getTransport_speed()));
 
                     if (elapsedTime + timeToNextPoint > transport_route.getUpdate_time() * 1000L) {
@@ -168,11 +168,11 @@ public class DriverOld implements Runnable{
                         timeAdd = transport_route.getUpdate_time() * 1000L - elapsedTime;
                         //Расчет координаты точки через некоторое время
                         intermediatePoint = Calculations.givePointFromDistance(
-                                currentPoint.getLat().doubleValue(),
-                                currentPoint.getLon().doubleValue(),
+                                currentPoint.getLatB().doubleValue(),
+                                currentPoint.getLonB().doubleValue(),
                                 (timeToNextPoint / 1000) * (speed / 3.6),
-                                nextPoint.getLat().doubleValue(),
-                                nextPoint.getLon().doubleValue());
+                                nextPoint.getLatB().doubleValue(),
+                                nextPoint.getLonB().doubleValue());
                         transport_route.setCurrentPoint(intermediatePoint);
                         currentPoint = intermediatePoint;
                         elapsedTime = 0;
@@ -196,7 +196,7 @@ public class DriverOld implements Runnable{
                         }
                         if (elapsedTime == 0) {
                             sendLocation(transport_route.getCurrentPoint());
-                            log.info("Текущая геопозиция: " + transport_route.getCurrentPoint().getLon() + " " + transport_route.getCurrentPoint().getLat());
+                            log.info("Текущая геопозиция: " + transport_route.getCurrentPoint().getLonB() + " " + transport_route.getCurrentPoint().getLatB());
                             startTimeTimer = System.currentTimeMillis();
                         }
                     } catch (InterruptedException e) {
@@ -204,7 +204,7 @@ public class DriverOld implements Runnable{
                         throw new RuntimeException(e);
                     }
                     if (currentPoint.hasName()) {
-                        log.info("Текущая остановка: " + currentPoint.getName() + " " + currentPoint.getLon() + " " + currentPoint.getLat());
+                        log.info("Текущая остановка: " + currentPoint.getName() + " " + currentPoint.getLonB() + " " + currentPoint.getLatB());
                         log.info("Стою 15 секунд");
                         try {
                             Thread.sleep(15L * 1000L);
@@ -366,7 +366,7 @@ public class DriverOld implements Runnable{
     }
     private void sendLocation(Point currentPoint){
         try {
-            request.SendingLocationRequest(authorizationToken, currentPoint.getLat().toString(), currentPoint.getLon().toString());
+            request.SendingLocationRequest(authorizationToken, currentPoint.getLatB().toString(), currentPoint.getLonB().toString());
         }
         catch (IOException e){
             log.error(e.getMessage());

@@ -18,4 +18,5 @@ public class Constants {
     public static final String SendingLocation = "session/location";
     public static final String StartSessionTypeA = "session/start/a";
     public static final String StopSession = "session/stop";
+    public static final String URL = "https://devsrv.ru/api/v1/driver/";
 }

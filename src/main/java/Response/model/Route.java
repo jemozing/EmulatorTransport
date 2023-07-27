@@ -2,7 +2,9 @@ package Response.model;
 
 import com.google.gson.annotations.SerializedName;
 import lombok.Data;
+import model.Point;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -10,9 +12,9 @@ public class Route extends Response.model.Data {
     @SerializedName("type")
     int type;
     @SerializedName("path")
-    List<Point> path;
+    ArrayList<Point> path;
     @SerializedName("points")
-    List<BusStation> points;
+    ArrayList<BusStation> points;
     @SerializedName("path_by_dir")
     Path_by_dir path_by_dir;
     @SerializedName("points_by_dir")
@@ -22,21 +24,16 @@ public class Route extends Response.model.Data {
     public class Path_by_dir{
 
         @SerializedName("forward")
-        List<Point> forward;
+        ArrayList<Point> forward;
         @SerializedName("backward")
-        List<Point> backward;
+        ArrayList<Point> backward;
     }
     @Data
     public class Points_by_dir{
         @SerializedName("forward")
-        List<BusStation> forward;
+        ArrayList<BusStation> forward;
         @SerializedName("backward")
-        List<BusStation> backward;
-    }
-    @Data
-    public class Point{
-        double lon;
-        double lat;
+        ArrayList<BusStation> backward;
     }
     @Data
     public class BusStation {

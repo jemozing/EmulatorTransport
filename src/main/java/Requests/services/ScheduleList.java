@@ -6,7 +6,7 @@ import com.google.gson.JsonObject;
 
 public class ScheduleList extends Requests {
     public JsonObject request(String authKey, int route_id){
-        setUrl(Constants.ScheduleList);
+        setUrl(Constants.URL + Constants.ScheduleList);
         setUseAuthKey(true);
         setUseBodyParams(true);
         setAuthorizationKey(authKey);

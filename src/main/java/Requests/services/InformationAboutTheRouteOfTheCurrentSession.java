@@ -6,7 +6,7 @@ import com.google.gson.JsonObject;
 
 public class InformationAboutTheRouteOfTheCurrentSession extends Requests {
     public JsonObject request(String authKey){
-        setUrl(Constants.InformationAboutTheRouteOfTheCurrentSession);
+        setUrl(Constants.URL + Constants.InformationAboutTheRouteOfTheCurrentSession);
         setUseAuthKey(true);
         setUseBodyParams(false);
         setAuthorizationKey(authKey);

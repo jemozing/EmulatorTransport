@@ -11,8 +11,8 @@ public class RouteBase {
     private int user_id;
     private int number;
     private String name = "";
-    private List<Point> route_forward = new ArrayList<>();
-    private List<Point> route_backward = new ArrayList<>();
+    private ArrayList<Point> route_forward = new ArrayList<>();
+    private ArrayList<Point> route_backward = new ArrayList<>();
 
     public void addCoordinatesForward(Point point) {
         route_forward.add(point);
@@ -22,19 +22,19 @@ public class RouteBase {
         route_backward.add(point);
     }
 
-    public void setRoute_forward(List<Point> route_forward) {
+    public void setRoute_forward(ArrayList<Point> route_forward) {
         this.route_forward = route_forward;
     }
 
-    public void setRoute_backward(List<Point> route_backward) {
+    public void setRoute_backward(ArrayList<Point> route_backward) {
         this.route_backward = route_backward;
     }
 
-    public List<Point> getRoute_backward() {
+    public ArrayList<Point> getRoute_backward() {
         return route_backward;
     }
 
-    public List<Point> getRoute_forward() {
+    public ArrayList<Point> getRoute_forward() {
         return route_forward;
     }
 

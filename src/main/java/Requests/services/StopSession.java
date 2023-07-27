@@ -6,7 +6,7 @@ import com.google.gson.JsonObject;
 
 public class StopSession extends Requests {
     public JsonObject request(String authKey, String reason_optional){
-        setUrl(Constants.StopSession);
+        setUrl(Constants.URL + Constants.StopSession);
         setUseAuthKey(true);
         setUseBodyParams(true);
         setAuthorizationKey(authKey);

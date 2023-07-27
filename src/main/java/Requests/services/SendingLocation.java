@@ -6,7 +6,7 @@ import com.google.gson.JsonObject;
 
 public class SendingLocation extends Requests {
     public JsonObject request(String authKey, String latiude, String longtiude){
-        setUrl(Constants.SendingLocation);
+        setUrl(Constants.URL + Constants.SendingLocation);
         setUseAuthKey(true);
         setUseBodyParams(true);
         setAuthorizationKey(authKey);

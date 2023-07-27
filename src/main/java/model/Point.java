@@ -3,34 +3,35 @@ package model;
 import java.math.BigDecimal;
 
 public class Point {
-    private BigDecimal lon, lat; //координаты точки
+    private BigDecimal lonB, latB; //координаты точки
+    private double lon, lat;
     private String name;
 
-    public Point(BigDecimal lon, BigDecimal lat, String name) {
-        this.lon = lon;
-        this.lat = lat;
+    public Point(BigDecimal lonB, BigDecimal latB, String name) {
+        this.lonB = lonB;
+        this.latB = latB;
         this.name = name;
     }
     public Point(double lon, double lat) {
-        this.lon = new BigDecimal(lon);
-        this.lat = new BigDecimal(lat);
+        this.lon = lon;
+        this.lat = lat;
         this.name = "";
     }
 
-    public BigDecimal getLon() {
-        return lon;
+    public BigDecimal getLonB() {
+        return lonB;
     }
 
-    public void setLon(BigDecimal lon) {
-        this.lon = lon;
+    public void setLonB(BigDecimal lonB) {
+        this.lonB = lonB;
     }
 
-    public BigDecimal getLat() {
-        return lat;
+    public BigDecimal getLatB() {
+        return latB;
     }
 
-    public void setLat(BigDecimal lat) {
-        this.lat = lat;
+    public void setLatB(BigDecimal latB) {
+        this.latB = latB;
     }
 
     public String getName() {
@@ -41,5 +42,25 @@ public class Point {
         if (name == null) {
             return false;
         } else return !name.isEmpty();
+    }
+
+    public double getLon() {
+        return lon;
+    }
+
+    public void setLon(double lon) {
+        this.lon = lon;
+    }
+
+    public double getLat() {
+        return lat;
+    }
+
+    public void setLat(double lat) {
+        this.lat = lat;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }
