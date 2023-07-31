@@ -3,7 +3,7 @@
     {
       "route_id": 1,
       "route": "421",
-      "numberOfCars": 13,
+      "numberOfCars": 1,
       "movementInterval": 30,
       "updateFrequency": 15,
       "speed": 70,
@@ -64,7 +64,7 @@
     },{
       "route_id": 1,
       "route": "3",
-      "numberOfCars": 6,
+      "numberOfCars": 0,
       "movementInterval": 45,
       "updateFrequency": 15,
       "speed": 60,

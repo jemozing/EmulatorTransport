@@ -59,5 +59,8 @@ public class Route extends Response.model.Data {
             private String handle;
             // Геттеры и сеттеры
         }
+        public Point getPoint(){
+            return new Point(lon,lat);
+        }
     }
 }

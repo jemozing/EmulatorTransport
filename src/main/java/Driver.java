@@ -18,8 +18,11 @@ public class Driver implements Runnable{
     public Driver(SettingRoute settingRoute, Account account, boolean direction, int id){
         driverData.setAccount(account);
         driverData.setDirectionRoute(direction);
-        driverData.setSettingRoute(settingRoute);
         this.id = id;
+        driverData.setSpeed(settingRoute.getSpeed());
+        driverData.setMovementInterval(settingRoute.getMovementInterval());
+        driverData.setUpdateFrequency(settingRoute.getUpdateFrequency());
+        driverData.setRoute_name(settingRoute.getRoute());
     }
     @Override
     public void run() {
@@ -37,15 +40,15 @@ public class Driver implements Runnable{
         // И начинается обход маршрута по точкам с обозначением промежуточных точек
 
         try {
-            Thread.sleep(id * driverData.getSettingRoute().getMovementInterval() * 1000L);
-            driverData.setSpeed(driverData.getSettingRoute().getSpeed());
+            Thread.sleep(id * driverData.getMovementInterval() * 1000L);
+            driverData.setSpeed(driverData.getSpeed());
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
 
         driverData.setToken(((AuthResponse) serverResponse.authorization(driverData.getAccount().getPhone(), driverData.getAccount().getPin_code())).getToken());
         driverData.setCar_id(Integer.toString(((Car) serverResponse.ListOfDriversCars(driverData.getToken())).getId()));
-        CarRoutes carRoutes = (CarRoutes) serverResponse.ListOfRoutesForTheSelectedCar(driverData.getToken(), driverData.getCar_id(), driverData.getSettingRoute().getRoute());
+        CarRoutes carRoutes = (CarRoutes) serverResponse.ListOfRoutesForTheSelectedCar(driverData.getToken(), driverData.getCar_id(), driverData.getRoute_name());
         driverData.setRouteId(Integer.toString(carRoutes.getId()));
         driverData.setTerminusId(Integer.toString(carRoutes.getTerminus().get(driverData.isDirectionRoute()? 1 : 0).getId()));
         Schedule schedule = (Schedule) serverResponse.ListOfSessionTimesToGetStarted(driverData.getToken(), driverData.getCar_id(), driverData.getRouteId(), driverData.getTerminusId());
@@ -81,7 +84,7 @@ public class Driver implements Runnable{
         driverData.setRoute((Route) serverResponse.InformationAboutTheRouteOfTheCurrentSession(driverData.getToken()));
 
         //создание транспорта для водителя с указанным параметрами и добавление функций
-        driverData.setTransport_route(new Transport(
+        /*driverData.setTransport_route(new Transport(
                 new Point(driverData.getRoute().getPoints_by_dir().getForward().get(0).getLon(),
                         driverData.getRoute().getPoints_by_dir().getForward().get(0).getLat()),
                 new Point(driverData.getRoute().getPoints_by_dir().getBackward().get(0).getLat(),
@@ -89,7 +92,7 @@ public class Driver implements Runnable{
                 driverData.getSettingRoute().getRoute(),
                 driverData.getSettingRoute().getRoute_id(),
                 driverData.getSettingRoute().getUpdateFrequency(),
-                driverData.getSettingRoute().getSpeed()));
+                driverData.getSettingRoute().getSpeed()));*/
 
         Iterator<Point> routeIterator;//итератор маршрута
         Iterator<Route.BusStation> busStationIterator;
@@ -100,11 +103,11 @@ public class Driver implements Runnable{
                 driverData.setCurrentSessionStatus(session.getStatus());
 
             if (driverData.isDirectionRoute()) {//Определение направления маршрута
-                driverData.getTransport_route().setCurrentPoint(driverData.getTransport_route().getStartPoint());
+                //driverData.getTransport_route().setCurrentPoint(driverData.getTransport_route().getStartPoint());
                 routeIterator = driverData.getRoute().getPath_by_dir().getForward().iterator();
                 busStationIterator = driverData.getRoute().getPoints_by_dir().getForward().iterator();
             } else {
-                driverData.getTransport_route().setCurrentPoint(driverData.getTransport_route().getFinishPoint());
+                //driverData.getTransport_route().setCurrentPoint(driverData.getTransport_route().getFinishPoint());
                 routeIterator = driverData.getRoute().getPath_by_dir().getBackward().iterator();
                 busStationIterator = driverData.getRoute().getPoints_by_dir().getBackward().iterator();
             }
@@ -127,12 +130,20 @@ public class Driver implements Runnable{
                 }
             }
             //текущая точка, следующая точка, промежуточная точка
-            currentPoint = routeIterator.next();
+            busStation = busStationIterator.next();
+            currentPoint = busStation.getPoint();
             nextPoint = null;
             intermediatePoint = null;
-            busStation = busStationIterator.next();
             log.info("Начинаю поездку с конечной точки");
-            log.info("Текущая точка: " + currentPoint.getName() + " " + currentPoint.getLon() + " " + currentPoint.getLat());
+            log.info("Текущая точка: " + busStation.getName() + " " + currentPoint.getLon() + " " + currentPoint.getLat());
+            if (serverResponse.SendingLocation(driverData.getToken(), busStation.getPoint())){
+                passedBusStation++;
+                log.info("Текущая геопозиция: " + busStation.getLon() + " " + busStation.getLat());
+                currentPoint = routeIterator.next();
+            }else {
+                log.error("Ошибка отправки местоположения");
+            }
+            busStation = busStationIterator.next();
             long startTimeTimer = System.currentTimeMillis();
             long elapsedTime = 0; //прошедшее время
             long timeAdd = 0;
@@ -141,38 +152,42 @@ public class Driver implements Runnable{
             while (routeIterator.hasNext()) {
                 if (System.currentTimeMillis() - startTimeTimer > 20000L){
                     session = (Session) serverResponse.InformationAboutTheCurrentSession(driverData.getToken());
-                    serverResponse.InformationAboutDistanceAndOtherStatistic(driverData.getToken());
+                    //serverResponse.InformationAboutDistanceAndOtherStatistic(driverData.getToken());
                     startTimeTimer = System.currentTimeMillis();
                 }
-                if (calculations.DistanceBetweenPoints(currentPoint, busStation.getLat(), busStation.getLon()) < 50.0 && busStationIterator.hasNext()) {
-                    try {
-                        if (serverResponse.SendingLocation(driverData.getToken(), driverData.getTransport_route().getCurrentPoint())){
-                            long sleepTimeToBusSt = Math.round(calculations.timeDistance(currentPoint.getLat(),
-                                    currentPoint.getLon(),busStation.getLat(),busStation.getLon(),
-                                    driverData.getTransport_route().getTransport_speed()));
-                            Thread.sleep(sleepTimeToBusSt);
-                        } else {
-                            log.error("Ошибка отправки местоположения");
+                if(busStation.getEvent().getCode().equals("bus_stop") || busStation.getEvent().getCode().equals("bus_terminus")){
+                    if (calculations.DistanceBetweenPoints(currentPoint, busStation.getPoint()) < 60.0 && busStationIterator.hasNext()) {
+                        try {
+                            if (serverResponse.SendingLocation(driverData.getToken(), currentPoint)){
+                                long sleepTimeToBusSt = Math.round(calculations.timeDistance(currentPoint.getLat(),
+                                        currentPoint.getLon(),busStation.getLat(),busStation.getLon(),
+                                        driverData.getSpeed()));
+                                Thread.sleep(sleepTimeToBusSt);
+                            } else {
+                                log.error("Ошибка отправки местоположения");
+                            }
+                        } catch (InterruptedException e) {
+                            throw new RuntimeException(e);
                         }
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-                    try {
-                        if (serverResponse.SendingLocation(driverData.getToken(), new Point(busStation.getLon(), busStation.getLat()))){
-                            passedBusStation++;
-                            Thread.sleep(15L * 1000L);
-                            log.info("Текущая остановка: " + busStation.getName() + " " + busStation.getLon() + " " + busStation.getLat());
-                            log.info("Стою 15 секунд");
-                        } else {
-                            log.error("Ошибка отправки местоположения");
+                        try {
+                            if (serverResponse.SendingLocation(driverData.getToken(), busStation.getPoint())){
+                                passedBusStation++;
+                                Thread.sleep(15L * 1000L);
+                                log.info("Текущая остановка: " + busStation.getName() + " " + busStation.getLon() + " " + busStation.getLat());
+                                log.info("Стою 15 секунд");
+                            } else {
+                                log.error("Ошибка отправки местоположения");
+                            }
+                            elapsedTime = 0;
+                            currentPoint = busStation.getPoint();
+                            busStation = busStationIterator.next();
+                        } catch (InterruptedException e) {
+                            throw new RuntimeException(e);
                         }
-                        elapsedTime = 0;
-                        currentPoint.setLat(busStation.getLat());
-                        currentPoint.setLon(busStation.getLon());
-                        busStation = busStationIterator.next();
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
                     }
+                } else {
+                    passedBusStation++;
+                    busStation = busStationIterator.next();
                 }
                 if (driverData.getCurrentSessionStatus().equals("ON_ROUTE")) {
                     if (intermediatePoint == null) {
@@ -184,41 +199,38 @@ public class Driver implements Runnable{
                             currentPoint.getLon(),
                             nextPoint.getLat(),
                             nextPoint.getLon(),
-                            driverData.getTransport_route().getTransport_speed()));
+                            driverData.getSpeed()));
 
-                    if (elapsedTime + timeToNextPoint > driverData.getTransport_route().getUpdate_time() * 1000L) {
+                    if (elapsedTime + timeToNextPoint > driverData.getUpdateFrequency() * 1000L) {
                         //Сколько времени транспорт будет ехать до 15 секунд
-                        timeAdd = driverData.getTransport_route().getUpdate_time() * 1000L - elapsedTime;
+                        timeAdd = driverData.getUpdateFrequency() * 1000L - elapsedTime;
                         //Расчет координаты точки через некоторое время
                         intermediatePoint = calculations.givePointFromDistance(
                                 currentPoint.getLat(),
                                 currentPoint.getLon(),
-                                (timeAdd / 1000.0) * (driverData.getTransport_route().getTransport_speed() / 3.6),
+                                (timeAdd / 1000.0) * (driverData.getSpeed() / 3.6),
                                 nextPoint.getLat(),
                                 nextPoint.getLon());
-                        driverData.getTransport_route().setCurrentPoint(intermediatePoint);
                         currentPoint = intermediatePoint;
                         elapsedTime = 0;
-                    } else if (elapsedTime + timeToNextPoint < driverData.getTransport_route().getUpdate_time() * 1000L) {
-                        driverData.getTransport_route().setCurrentPoint(nextPoint);
+                    } else if (elapsedTime + timeToNextPoint < driverData.getUpdateFrequency() * 1000L) {
                         currentPoint = nextPoint;
                         elapsedTime += timeToNextPoint;
                         intermediatePoint = null;
                     } else {
-                        driverData.getTransport_route().setCurrentPoint(nextPoint);
                         currentPoint = nextPoint;
                         elapsedTime = 0;
                         intermediatePoint = null;
                     }
                     try {
                         if(elapsedTime != 0){
-                            Thread.sleep(elapsedTime);//ожидание
+                            Thread.sleep(timeToNextPoint);//ожидание
                         }else {
                             Thread.sleep(timeAdd);//ожидание
                         }
                         if (elapsedTime == 0) {
-                                if (serverResponse.SendingLocation(driverData.getToken(), driverData.getTransport_route().getCurrentPoint())){
-                                    log.info("Текущая геопозиция: " + driverData.getTransport_route().getCurrentPoint().getLon() + " " + driverData.getTransport_route().getCurrentPoint().getLat());
+                                if (serverResponse.SendingLocation(driverData.getToken(), currentPoint)){
+                                    log.info("Текущая геопозиция: " + currentPoint.getLon() + " " + currentPoint.getLat());
                                 }else {
                                     log.error("Ошибка отправки местоположения");
                                 }
@@ -247,10 +259,33 @@ public class Driver implements Runnable{
                     log.error("Некоретный статус");
                 }
             }
+            if(busStationIterator.hasNext()){
+                while (busStationIterator.hasNext()){
+                    busStation = busStationIterator.next();
+                    if(busStation.getEvent().getCode().equals("bus_terminus")){
+                        if (serverResponse.SendingLocation(driverData.getToken(), busStation.getPoint())){
+                            passedBusStation++;
+                            log.info("Текущая геопозиция: " + busStation.getLon() + " " + busStation.getLat());
+                        }else {
+                            log.error("Ошибка отправки местоположения");
+                        }
+                    }
+                }
+            } else {
+                if(busStation.getEvent().getCode().equals("bus_terminus")){
+                    if (serverResponse.SendingLocation(driverData.getToken(), busStation.getPoint())){
+                        passedBusStation++;
+                        log.info("Текущая геопозиция: " + busStation.getLon() + " " + busStation.getLat());
+                    }else {
+                        log.error("Ошибка отправки местоположения");
+                    }
+                }
+            }
+
             //вот это смена маршрута, смена ид сессии и проверка времени чтобы отправится обратно
             driverData.setDirectionRoute(!driverData.isDirectionRoute());
             driverData.setTerminusId(Integer.toString(carRoutes.getTerminus().get(driverData.isDirectionRoute()? 1 : 0).getId()));
-            if (driverData.isDirectionRoute()){
+            if (!driverData.isDirectionRoute()){
                 if(passedBusStation == driverData.getRoute().getPoints_by_dir().getForward().size()){
                     log.info("Направление FORWARD, Все остановки пройдены успешено: "+ passedBusStation + "/"+driverData.getRoute().getPoints_by_dir().getForward().size());
                     passedBusStation=0;

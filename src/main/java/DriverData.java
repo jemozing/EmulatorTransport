@@ -10,12 +10,13 @@ public class DriverData {
     private String token;
     private String car_id;
     private Route route;
-    private Transport transport_route;
-    private SettingRoute settingRoute;
+    //private Transport transport_route;
+    //private SettingRoute settingRoute;
     private int movementInterval;
-    private int UpdateFrequency;
+    private int updateFrequency;
     private double speed;
     private boolean directionRoute;
+    private String route_name;
     private String routeId, terminusId, startTime;// Id машины, маршрута, терминала, начальное время
     private String sessionId = "0";
     private String currentSessionId = "0";
