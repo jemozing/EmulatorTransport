@@ -1,10 +1,6 @@
-import Response.Services.ServerResponse;
-import Service.AccountCSVReader;
+
 import Service.Config;
-import Service.DataBaseRequests;
 import lombok.extern.slf4j.Slf4j;
-import model.Account;
-import model.SettingRoute;
 import org.apache.log4j.PropertyConfigurator;
 
 import java.io.File;
@@ -12,7 +8,6 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -36,12 +31,8 @@ public class Main {
         log.info("Во избежании проблем советую приготовить огнетушитель");
         log.info("Приятной DDOS атаки!");
 
-        HttpRequestOld request = new HttpRequestOld();
-        DataBaseRequests dataBaseRequests = new DataBaseRequests();
         //Service.Config.readConfigFile("src/main/resources/config.csv");
         Config.readConfig("src/main/resources/config.json");
-        Iterator iter = Config.getSettingRoutesData().iterator();
-        ArrayList<Account> accounts = AccountCSVReader.CSVRead();
 
         /*while (iter.hasNext()){
             SettingRoute setting = (SettingRoute) iter.next();

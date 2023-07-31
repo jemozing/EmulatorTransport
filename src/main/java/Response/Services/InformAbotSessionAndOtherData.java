@@ -1,7 +1,5 @@
 package Response.Services;
 
-import Response.model.AuthResponse;
-import Response.model.CarRoutes;
 import Response.model.InformAbotSessionAndOther;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;

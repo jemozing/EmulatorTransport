@@ -6,7 +6,7 @@
       "numberOfCars": 13,
       "movementInterval": 30,
       "updateFrequency": 15,
-      "speed": 60,
+      "speed": 70,
       "accounts" : [
         {
           "phone" : "7 421 000-05-33",
@@ -65,7 +65,7 @@
       "route_id": 1,
       "route": "3",
       "numberOfCars": 6,
-      "movementInterval": 30,
+      "movementInterval": 45,
       "updateFrequency": 15,
       "speed": 60,
       "accounts" : [

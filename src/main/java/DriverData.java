@@ -1,8 +1,6 @@
-import lombok.Getter;
-import lombok.Setter;
+import Response.model.Route;
 import model.Account;
 import lombok.Data;
-import model.RouteBase;
 import model.SettingRoute;
 import model.Transport;
 
@@ -11,7 +9,7 @@ public class DriverData {
     private Account account;
     private String token;
     private String car_id;
-    private RouteBase route;
+    private Route route;
     private Transport transport_route;
     private SettingRoute settingRoute;
     private int movementInterval;
