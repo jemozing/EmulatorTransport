@@ -265,7 +265,7 @@ public class Driver implements Runnable{
                     if(busStation.getEvent().getCode().equals("bus_terminus")){
                         if (serverResponse.SendingLocation(driverData.getToken(), busStation.getPoint())){
                             passedBusStation++;
-                            log.info("Текущая геопозиция: " + busStation.getLon() + " " + busStation.getLat());
+                            log.info("Текущая Остановка: " + busStation.getName() + " " + busStation.getLon() + " " + busStation.getLat());
                         }else {
                             log.error("Ошибка отправки местоположения");
                         }
@@ -275,7 +275,23 @@ public class Driver implements Runnable{
                 if(busStation.getEvent().getCode().equals("bus_terminus")){
                     if (serverResponse.SendingLocation(driverData.getToken(), busStation.getPoint())){
                         passedBusStation++;
-                        log.info("Текущая геопозиция: " + busStation.getLon() + " " + busStation.getLat());
+                        log.info("Текущая Остановка: " + busStation.getName() + " " + busStation.getLon() + " " + busStation.getLat());
+                    }else {
+                        log.error("Ошибка отправки местоположения");
+                    }
+                }
+                if(busStation.getEvent().getCode().equals("change_direction")){
+                    if (serverResponse.SendingLocation(driverData.getToken(), busStation.getPoint())){
+                        passedBusStation++;
+                        log.info("Точка смены маршрута: " + busStation.getLon() + " " + busStation.getLat());
+                    }else {
+                        log.error("Ошибка отправки местоположения");
+                    }
+                }
+                if(busStation.getEvent().getCode().equals("bus_stop")){
+                    if (serverResponse.SendingLocation(driverData.getToken(), busStation.getPoint())){
+                        passedBusStation++;
+                        log.info("Текущая Остановка: " + busStation.getName() + " " + busStation.getLon() + " " + busStation.getLat());
                     }else {
                         log.error("Ошибка отправки местоположения");
                     }

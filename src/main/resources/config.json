@@ -3,7 +3,7 @@
     {
       "route_id": 1,
       "route": "421",
-      "numberOfCars": 1,
+      "numberOfCars": 0,
       "movementInterval": 30,
       "updateFrequency": 15,
       "speed": 70,
@@ -64,7 +64,7 @@
     },{
       "route_id": 1,
       "route": "3",
-      "numberOfCars": 0,
+      "numberOfCars": 1,
       "movementInterval": 45,
       "updateFrequency": 15,
       "speed": 60,
@@ -91,6 +91,39 @@
         },
         {
           "phone" : "7 000 000-00-06",
+          "pin_code": 1111
+        }
+      ]
+    },{
+      "route_id": 1,
+      "route": "20",
+      "numberOfCars": 0,
+      "movementInterval": 45,
+      "updateFrequency": 15,
+      "speed": 60,
+      "accounts" : [
+        {
+          "phone" : "7 910 000-00-01",
+          "pin_code": 1111
+        },
+        {
+          "phone" : "7 910 000-00-02",
+          "pin_code": 1111
+        },
+        {
+          "phone" : "7 910 000-00-03",
+          "pin_code": 1111
+        },
+        {
+          "phone" : "7 910 000-00-04",
+          "pin_code": 1111
+        },
+        {
+          "phone" : "7 910 000-00-05",
+          "pin_code": 1111
+        },
+        {
+          "phone" : "7 910 000-00-06",
           "pin_code": 1111
         }
       ]
